@@ -53,9 +53,26 @@ router.post("/favorites", async (req, res) => {
       });
     }
 
+    const [existing] = await pool.query(
+      `
+      SELECT favorite_id
+      FROM favorites
+      WHERE user_id = ?
+        AND att_id = ?
+      LIMIT 1
+      `,
+      [user_id, att_id]
+    );
+
+    if (existing.length > 0) {
+      return res.status(409).json({
+        message: "This attraction is already in your favorites."
+      });
+    }
+
     await pool.query(
       `
-      INSERT IGNORE INTO favorites (user_id, att_id, favorite_name)
+      INSERT INTO favorites (user_id, att_id, favorite_name)
       VALUES (?, ?, ?)
       `,
       [user_id, att_id, favorite_name || "My Favorite"]

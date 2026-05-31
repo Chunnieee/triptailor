@@ -111,8 +111,18 @@
         document.getElementById("show-username").textContent = user.name || "User";
         document.getElementById("show-email").textContent = user.email || "user@email.com";
         document.getElementById("show-phone").textContent = user.phone_number || "Not set";
-        document.getElementById("show-travel-freq").textContent = user.travel_freq || "Not set";
-        document.getElementById("show-city").textContent = localStorage.getItem("user_city") || "Not set";
+        const travelFreqEl = document.getElementById("show-travel-freq");
+
+          if (travelFreqEl) {
+            travelFreqEl.textContent = user.travel_freq || "Not set";
+          }
+
+        const cityEl = document.getElementById("show-city");
+
+          if (cityEl) {
+            cityEl.textContent =
+            localStorage.getItem("user_city") || "Not set";
+          }
         localStorage.setItem("user_name", user.name || "User");
         localStorage.setItem("user_email", user.email || "");
         localStorage.setItem("user_phone", user.phone_number || "");

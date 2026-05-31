@@ -41,18 +41,13 @@
           </div>
 
           <div class="stat-box">
-            <strong>0</strong>
-            <small>likes</small>
-          </div>
-
-          <div class="stat-box">
             <strong>-</strong>
             <small>ticket</small>
           </div>
 
           <div class="stat-box">
             <strong>0</strong>
-            <small>bookmarks</small>
+            <small>favorites</small>
           </div>
         </section>
 
@@ -69,7 +64,7 @@
         </section>
 
         <div class="attraction-actions">
-          <a href="#" class="action-btn">Bookmarks</a>
+          <a href="#" class="action-btn">Favorites</a>
           <a href="#" class="action-btn">Reviews</a>
         </div>
 
@@ -143,21 +138,25 @@
           `;
         }
 
-        if (statBoxes.length >= 4) {
-          statBoxes[0].textContent = att.avg_rating || att.google_rating || "N/A";
-          statBoxes[1].textContent = "0";
-          statBoxes[2].textContent = att.ticket_price || "0";
-          statBoxes[3].textContent = att.bookmark_count ?? 0;
+        if (statBoxes.length >= 3) {
+            statBoxes[0].textContent = att.avg_rating || att.google_rating || "N/A";
+            statBoxes[1].textContent = att.ticket_price || "0";
+            statBoxes[2].textContent = att.bookmark_count ?? 0;
         }
 
         if (detailImage) {
-          detailImage.src = "images/palace.jpg";
-          detailImage.alt = att.att_name;
+            detailImage.src = att.image_url || "images/default.jpg";
+            detailImage.alt = att.att_name || "Attraction Image";
+
+            detailImage.onerror = function () {
+                this.onerror = null;
+                this.src = "images/default.jpg";
+            };
         }
 
         if (actions) {
           actions.innerHTML = `
-            <a href="#" class="action-btn" onclick="addFavorite(${att.att_id})">Bookmarks</a>
+            <a href="#" class="action-btn" onclick="addFavorite(${att.att_id})">Favorites</a>
             <a href="attraction_review.html?id=${att.att_id}" class="action-btn">Reviews</a>
           `;
         }
@@ -253,7 +252,7 @@
           return;
         }
 
-        alert("Added to bookmarks!");
+        alert("Added to favorites!");
         const bookmarkStat = document.querySelectorAll(".stat-box strong")[3];
         if (bookmarkStat) {
           bookmarkStat.textContent = Number(bookmarkStat.textContent) + 1;

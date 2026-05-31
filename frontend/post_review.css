@@ -2,10 +2,13 @@
   width: 390px;
   height: 844px;
   background: #ffffff;
-  padding: 22px 18px;
+  padding: 22px 22px 96px;
   color: var(--dark-green);
+  position: relative;
+  overflow: hidden;
 }
 
+/* Top profile */
 .post-profile-row {
   display: flex;
   justify-content: space-between;
@@ -32,73 +35,102 @@
   font-size: 20px;
 }
 
+/* Title */
 .post-title-row {
-  margin-top: 22px;
+  margin-top: 26px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .post-back-btn {
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  border: 3px solid var(--light-green);
-  background: #ffffff;
-  color: var(--light-green);
+  border: none;
+  background: #eef1ea;
+  color: var(--dark-green);
   display: flex;
   justify-content: center;
   align-items: center;
   cursor: pointer;
+  font-size: 17px;
 }
 
 .post-title-row h2 {
-  font-size: 21px;
+  font-size: 24px;
   color: #111;
+  font-weight: 700;
 }
 
+/* Attraction name */
 .post-attraction-name {
-  margin-top: 34px;
+  margin-top: 42px;
   text-align: center;
-  font-size: 18px;
+  font-size: 23px;
+  font-weight: 700;
   color: #111;
 }
 
+/* Stars */
 .post-stars {
-  margin-top: 28px;
+  margin-top: 30px;
   display: flex;
   justify-content: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .post-stars span {
   font-size: 42px;
   color: var(--dark-green);
   cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s ease;
 }
 
+.post-stars span:hover {
+  transform: scale(1.08);
+  opacity: 0.85;
+}
+
+/* Textarea card */
 .review-textarea {
-  margin-top: 28px;
+  margin-top: 32px;
   width: 100%;
-  height: 150px;
-  border: 2px solid var(--dark-green);
-  border-radius: 14px;
-  padding: 12px;
-  font-size: 14px;
+  height: 170px;
+  border: none;
+  border-radius: 20px;
+  padding: 16px;
+  font-size: 15px;
   font-family: Arial, "Noto Sans TC", sans-serif;
   resize: none;
   outline: none;
+
+  background: #eef1ea;
+  color: #111;
+  line-height: 1.6;
+  box-shadow: inset 0 0 0 1px #c5cdc2;
 }
 
+.review-textarea::placeholder {
+  color: var(--dark-green);
+  opacity: 0.65;
+}
+
+/* Send button */
 .send-btn {
   display: block;
-  margin: 14px 0 0 auto;
-  width: 70px;
-  height: 32px;
+  margin: 18px 0 0 auto;
+  width: 96px;
+  height: 42px;
   border: none;
   border-radius: 999px;
-  background: var(--light-green);
-  color: var(--dark-green);
+  background: var(--dark-green);
+  color: #ffffff;
+  font-size: 15px;
   font-weight: 700;
   cursor: pointer;
+}
+
+.send-btn:hover {
+  opacity: 0.9;
 }

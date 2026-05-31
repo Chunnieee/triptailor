@@ -4,13 +4,18 @@
 
 .review-phone {
   width: 390px;
-  min-height: 844px;
-
+  height: 780px;
   background: #ffffff;
-
-  padding: 22px 18px;
-
   color: var(--dark-green);
+
+  position: relative;
+  overflow-y: auto;
+
+  padding: 22px 18px 110px;
+}
+
+.review-phone::-webkit-scrollbar {
+  display: none;
 }
 
 /* =========================
@@ -54,7 +59,7 @@
 ========================= */
 
 .review-title-row {
-  margin-top: 22px;
+  margin-top: 26px;
 
   display: flex;
   align-items: center;
@@ -62,32 +67,27 @@
 }
 
 .review-title-row h2 {
-  font-size: 22px;
+  font-size: 24px;
+  font-weight: 700;
   color: #111;
 }
-
-/* =========================
-   BACK BUTTON
-========================= */
 
 .review-back-btn {
   width: 34px;
   height: 34px;
 
   border-radius: 50%;
-  border: 2px solid var(--light-green);
+  border: none;
 
-  background: white;
-
-  color: var(--light-green);
+  background: #eef1ea;
+  color: var(--dark-green);
 
   display: flex;
   justify-content: center;
   align-items: center;
 
   cursor: pointer;
-
-  font-size: 16px;
+  font-size: 17px;
 }
 
 /* =========================
@@ -95,12 +95,11 @@
 ========================= */
 
 .review-attraction-name {
-  margin-top: 34px;
-
+  margin-top: 36px;
   text-align: center;
 
-  font-size: 22px;
-
+  font-size: 24px;
+  font-weight: 700;
   color: #111;
 }
 
@@ -109,7 +108,8 @@
 ========================= */
 
 .review-summary {
-  margin-top: 28px;
+  margin-top: 26px;
+  margin-bottom: 42px;
 
   display: flex;
   justify-content: center;
@@ -120,21 +120,23 @@
 
 .review-score {
   text-align: center;
+  min-width: 110px;
 }
 
 .review-score h3 {
   font-size: 58px;
+  font-weight: 700;
 
   color: var(--dark-green);
 
   line-height: 1;
+  margin: 0;
 }
 
 .filled-stars {
   margin-top: 8px;
 
   font-size: 20px;
-
   letter-spacing: 1px;
 
   color: var(--dark-green);
@@ -160,11 +162,11 @@
   width: 100%;
   height: 8px;
 
-  background: var(--light-green);
+  background: #d8ded4;
 
   border-radius: 999px;
 
-  margin-bottom: 10px;
+  margin-bottom: 9px;
 
   overflow: hidden;
 }
@@ -200,33 +202,96 @@
 }
 
 /* =========================
-   WRITE REVIEW
+   WRITE REVIEW FORM
 ========================= */
 
 .write-review-row {
-  margin-top: 26px;
+  margin-top: 48px;
+
+  background: #eef1ea;
+
+  border-radius: 18px;
+
+  padding: 14px;
 
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.write-review-text p {
-  font-size: 14px;
+.write-review-row textarea {
+  width: 100%;
+  height: 76px;
 
+  border: none;
+  outline: none;
+  resize: none;
+
+  background: #ffffff;
+
+  border-radius: 14px;
+
+  padding: 12px;
+
+  font-size: 14px;
   line-height: 1.5;
+  font-family: Arial, "Noto Sans TC", sans-serif;
 
   color: #111;
 }
 
-.empty-stars {
-  text-decoration: none;
+.write-review-row textarea::placeholder {
+  color: var(--dark-green);
+  opacity: 0.65;
+}
 
+.write-review-row select {
+  height: 38px;
+
+  border: none;
+  outline: none;
+
+  border-radius: 999px;
+
+  background: #ffffff;
   color: var(--dark-green);
 
-  font-size: 32px;
+  padding: 0 12px;
 
-  letter-spacing: 2px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.write-review-row button,
+.write-review-row input[type="submit"] {
+  height: 38px;
+
+  border: none;
+  border-radius: 999px;
+
+  background: var(--dark-green);
+  color: #ffffff;
+
+  padding: 0 18px;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+.write-review-row button:hover,
+.write-review-row input[type="submit"]:hover {
+  opacity: 0.9;
+}
+
+/* 如果 select 和 Send 沒有包 div，也可以讓它們排好 */
+.write-review-row select,
+.write-review-row button,
+.write-review-row input[type="submit"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* =========================
@@ -234,11 +299,11 @@
 ========================= */
 
 .user-review-card {
-  margin-top: 16px;
+  margin-top: 18px;
 
   background: #dfe6dc;
 
-  border-radius: 16px;
+  border-radius: 18px;
 
   padding: 16px;
 }
@@ -251,6 +316,7 @@
   color: var(--dark-green);
 
   font-size: 14px;
+  margin-bottom: 12px;
 }
 
 .small-user-icon {
@@ -286,4 +352,46 @@
   font-size: 14px;
 
   color: #111;
+}
+
+/* Edit / Delete buttons */
+.user-review-card button,
+.user-review-card a {
+  border: none;
+  border-radius: 999px;
+
+  background: #ffffff;
+  color: var(--dark-green);
+
+  padding: 7px 13px;
+  margin-right: 6px;
+  margin-top: 8px;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  cursor: pointer;
+  text-decoration: none;
+}
+.review-summary + form,
+.review-summary + .write-review-row {
+  margin-top: 56px !important;
+}
+
+.write-review-row {
+  margin-top: 56px;
+}
+
+.write-review-form {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.write-review-form select {
+  margin-bottom: 4px;
+}
+
+.write-review-form textarea {
+  margin-top: 8px;
 }

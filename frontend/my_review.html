@@ -38,23 +38,9 @@
       <main class="my-review-content">
         <h2>My Review</h2>
 
-        <section class="my-review-card">
-          <div class="my-review-card-header">
-            <a href="attraction.html" class="my-review-place-name">
-              台北市立動物園
-            </a>
-
-            <span class="my-review-date">2026/05/14</span>
-          </div>
-
-          <div class="my-review-stars">★★★★★</div>
-
-          <p>
-            “Great place for families and animal lovers. The zoo is spacious,
-            clean, and has many different animals to see. The panda area was
-            especially popular!”
-          </p>
-        </section>
+        <div id="my-review-list">
+            <p class="loading-text">Loading...</p>
+        </div>
       </main>
 
       <!-- Bottom Navigation -->
@@ -80,20 +66,81 @@
   </div>
 
   <script>
-    document.addEventListener("DOMContentLoaded", function () {
+    const API_BASE = "http://localhost:4000";
 
-      const userId = localStorage.getItem("user_id");
-      const userName = localStorage.getItem("user_name") || "User";
+    document.addEventListener("DOMContentLoaded", async function () {
+        const userId = localStorage.getItem("user_id");
+        const userName = localStorage.getItem("user_name") || "User";
 
-      document.getElementById("review-user-name").textContent = userName;
+        document.getElementById("review-user-name").textContent = userName;
 
-      if (!userId) {
-        alert("Please log in first.");
-        window.location.href = "login.html";
-        return;
-      }
+        if (!userId) {
+            alert("Please log in first.");
+            window.location.href = "login.html";
+            return;
+        }
 
+        await loadMyReviews(userId);
     });
-  </script>
+
+    async function loadMyReviews(userId) {
+        const list = document.getElementById("my-review-list");
+
+        try {
+        const response = await fetch(`${API_BASE}/api/users/${userId}/reviews`);
+        const reviews = await response.json();
+
+        if (!response.ok) {
+            list.innerHTML = `<p class="empty-text">${reviews.message || "Failed to load reviews."}</p>`;
+            return;
+        }
+
+        if (!Array.isArray(reviews) || reviews.length === 0) {
+            list.innerHTML = `<p class="empty-text">No reviews yet.</p>`;
+            return;
+        }
+
+        list.innerHTML = reviews.map((review) => {
+            const stars =
+                "★".repeat(Number(review.rating || 0)) +
+                "☆".repeat(5 - Number(review.rating || 0));
+
+            const placeName =
+                review.att_name || review.attraction_name || "Attraction";
+
+            const comment =
+                review.comment || "";
+
+            const date =
+                review.created_at
+                    ? new Date(review.created_at).toLocaleDateString("zh-TW")
+                    : "";
+
+            const attId =
+                review.att_id || review.attraction_id || "";
+
+            return `
+                <section class="my-review-card">
+                    <div class="my-review-card-header">
+                        <a href="attraction.html?id=${attId}" class="my-review-place-name">
+                            ${placeName}
+                        </a>
+
+                        <span class="my-review-date">${date}</span>
+                    </div>
+
+                    <div class="my-review-stars">${stars}</div>
+
+                    <p>${comment}</p>
+                </section>
+            `;
+        }).join("");
+
+    } catch (error) {
+      console.error(error);
+      list.innerHTML = `<p class="empty-text">Cannot connect to backend.</p>`;
+    }
+  }
+</script>
 </body>
 </html>
