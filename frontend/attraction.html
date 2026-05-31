@@ -183,10 +183,8 @@
         const data = await response.json();
 
         if (!response.ok || !data || data.length === 0) {
-          transportCard.innerHTML = `
-            <p>No transportation information available.</p>
-          `;
-          return;
+            await loadGoogleDirections(attId);
+            return;
         }
 
         transportCard.innerHTML = data.map((item) => {
@@ -265,6 +263,112 @@
         alert("Cannot connect to backend.");
       }
     }
+    async function loadGoogleDirections(attId) {
+        const transportCard = document.querySelector(".transport-card");
+
+        if (!navigator.geolocation) {
+            transportCard.innerHTML = `
+                <p>GPS not supported.</p>
+            `;
+            return;
+        }
+
+        transportCard.innerHTML = `
+            <p>Loading route information...</p>
+        `;
+
+        navigator.geolocation.getCurrentPosition(
+            async function (position) {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+
+                try {
+                    const response = await fetch(
+                        `${API_BASE}/api/attractions/${attId}/directions?lat=${lat}&lng=${lng}&mode=TRANSIT`
+                );
+
+                    const data = await response.json();
+
+                if (!response.ok) {
+                    transportCard.innerHTML = `
+                        <p>No route information available.</p>
+                    `;
+                    return;
+                }
+
+                const minutes = Math.round(parseInt(data.duration) / 60);
+                const km = (data.distance_meters / 1000).toFixed(1);
+
+                const steps = data.steps || [];
+
+                const routeModes = steps
+                    .map((step) => {
+
+                        const mode = step.travelMode || "ROUTE";
+
+                        const vehicle =
+                            step.transitDetails?.transitLine?.vehicle?.name?.text || "";
+
+                if (vehicle) return vehicle;
+
+                if (mode === "WALK") return "Walk";
+                if (mode === "TRANSIT") return "Public transport";
+                if (mode === "DRIVE") return "Drive";
+                if (mode === "BICYCLE") return "Bike";
+
+                return mode;
+
+            })
+
+            .filter((mode, index, array) => {
+                return index === 0 || mode !== array[index - 1];
+            });
+
+        const routeSummary =
+            routeModes.length > 0
+                ? routeModes.join(" → ")
+                : "Route available";
+
+        transportCard.innerHTML = `
+            <div class="transport-item">
+
+                <p>
+                    <i class="fa-solid fa-route"></i>
+                    Suggested route
+                </p>
+
+                <p>
+                    <i class="fa-solid fa-location-arrow"></i>
+                    ${routeSummary}
+                </p>
+
+                <p>
+                    <i class="fa-solid fa-clock"></i>
+                    Total time: ${minutes} mins
+                </p>
+
+                <p>
+                    <i class="fa-solid fa-road"></i>
+                    Distance: ${km} km
+                </p>
+
+            </div>
+        `;
+            } catch (error) {
+                console.error(error);
+                transportCard.innerHTML = `
+                    <p>Cannot load route information.</p>
+                `;
+            }
+        },
+
+        function () {
+            transportCard.innerHTML = `
+                <p>Please allow location access.</p>
+            `;
+        }
+    );
+}
   </script>
 </body>
 

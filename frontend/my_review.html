@@ -22,26 +22,28 @@
       <!-- Top Bar -->
       <header class="my-review-header">
         <button class="back-btn" onclick="history.back()">
-            <i class="fa-solid fa-angle-left"></i>
+          <i class="fa-solid fa-angle-left"></i>
         </button>
 
         <div class="profile-info">
           <div class="profile-icon">
             <i class="fa-regular fa-user"></i>
           </div>
-          <span>Sophie Shih</span>
+
+          <span id="review-user-name">User</span>
         </div>
       </header>
 
       <!-- Main Content -->
       <main class="my-review-content">
-        <h2>My review</h2>
+        <h2>My Review</h2>
 
         <section class="my-review-card">
           <div class="my-review-card-header">
             <a href="attraction.html" class="my-review-place-name">
               台北市立動物園
             </a>
+
             <span class="my-review-date">2026/05/14</span>
           </div>
 
@@ -76,5 +78,22 @@
 
     </div>
   </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+      const userId = localStorage.getItem("user_id");
+      const userName = localStorage.getItem("user_name") || "User";
+
+      document.getElementById("review-user-name").textContent = userName;
+
+      if (!userId) {
+        alert("Please log in first.");
+        window.location.href = "login.html";
+        return;
+      }
+
+    });
+  </script>
 </body>
 </html>

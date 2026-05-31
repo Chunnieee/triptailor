@@ -19,6 +19,7 @@
   <div class="app-page">
     <div class="post-review-phone">
 
+      <!-- Top Profile -->
       <header class="post-profile-row">
         <div></div>
 
@@ -26,20 +27,24 @@
           <div class="profile-icon">
             <i class="fa-regular fa-user"></i>
           </div>
-          <span>Sophie Shih</span>
+
+          <span id="post-user-name">User</span>
         </div>
       </header>
 
+      <!-- Title Row -->
       <section class="post-title-row">
         <button class="back-btn" onclick="history.back()">
-            <i class="fa-solid fa-angle-left"></i>
+          <i class="fa-solid fa-angle-left"></i>
         </button>
 
         <h2>Reviews</h2>
       </section>
 
+      <!-- Attraction Name -->
       <h1 class="post-attraction-name">台北國立故宮博物院</h1>
 
+      <!-- Star Rating -->
       <section class="post-stars" id="starRating">
         <span data-value="1">☆</span>
         <span data-value="2">☆</span>
@@ -48,16 +53,37 @@
         <span data-value="5">☆</span>
       </section>
 
+      <!-- Review Text -->
       <textarea
         id="reviewText"
         class="review-textarea"
         placeholder="Leave your review"
       ></textarea>
 
-      <button class="send-btn" id="sendReviewBtn">send</button>
+      <!-- Send Button -->
+      <button class="send-btn" id="sendReviewBtn">
+        send
+      </button>
 
     </div>
   </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+      const userId = localStorage.getItem("user_id");
+      const userName = localStorage.getItem("user_name") || "User";
+
+      document.getElementById("post-user-name").textContent = userName;
+
+      if (!userId) {
+        alert("Please log in first.");
+        window.location.href = "login.html";
+        return;
+      }
+
+    });
+  </script>
 
   <script src="post_review.js"></script>
 </body>
