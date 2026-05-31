@@ -460,58 +460,74 @@ async function getOrCreateLocationId(address) {
   return result.insertId;
 }
 
-export async function searchGooglePlaces(keyword, options = {}) {
-  const key = getGooglePlacesApiKey();
-  const { maxResultCount = 15 } = options;
+export async function searchGooglePlaces(textQuery, options = {}) {
+  const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_PLACES_API_KEY;
 
-  const cleanKeyword = String(keyword || "").trim();
+  if (!GOOGLE_PLACES_API_KEY) {
+    throw new Error("Missing GOOGLE_PLACES_API_KEY in .env");
+  }
 
-  const textQuery = cleanKeyword.includes("台灣") || cleanKeyword.includes("臺灣")
-    ? cleanKeyword
-    : `${cleanKeyword} 台灣 景點`;
+  const cleanQuery = String(textQuery || "").trim();
 
-  const response = await fetch("https://places.googleapis.com/v1/places:searchText", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Goog-Api-Key": key,
-      "X-Goog-FieldMask": [
-        "places.id",
-        "places.displayName",
-        "places.formattedAddress",
-        "places.location",
-        "places.rating",
-        "places.userRatingCount",
-        "places.types",
-        "places.primaryType",
-        "places.photos.name",
-        "places.photos.widthPx",
-        "places.photos.heightPx",
-        "places.editorialSummary"
-      ].join(",")
-    },
-    body: JSON.stringify({
-      textQuery,
-      languageCode: "zh-TW",
-      regionCode: "TW",
-      maxResultCount
-    })
-  });
+  if (!cleanQuery) {
+    return [];
+  }
+
+  const maxResultCount = options.maxResultCount || 20;
+
+  const response = await fetch(
+    "https://places.googleapis.com/v1/places:searchText",
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": GOOGLE_PLACES_API_KEY,
+        "X-Goog-FieldMask": [
+          "places.id",
+          "places.displayName",
+          "places.formattedAddress",
+          "places.location",
+          "places.rating",
+          "places.userRatingCount",
+          "places.photos",
+          "places.types",
+          "places.websiteUri",
+          "places.googleMapsUri"
+        ].join(",")
+      },
+      body: JSON.stringify({
+        textQuery: cleanQuery,
+        languageCode: "zh-TW",
+        regionCode: "TW",
+        maxResultCount: maxResultCount,
+        locationBias: {
+          rectangle: {
+            low: {
+              latitude: 21.8,
+              longitude: 119.3
+            },
+            high: {
+              latitude: 25.4,
+              longitude: 122.1
+            }
+          }
+        }
+      })
+    }
+  );
 
   const data = await response.json();
 
-  if (!response.ok) {
-    console.error("Google Places New API error:", data);
+  console.log("Google Places API status:", response.status);
+  console.log("Google Places API response:", JSON.stringify(data, null, 2));
 
-    throw new Error(data.error?.message || "Google Places search failed");
+  if (!response.ok) {
+    throw new Error(
+      data.error?.message || "Google Places Text Search request failed"
+    );
   }
 
-  const places = data.places || [];
-
-  // 這裡先做第一層旅遊過濾，避免一堆普通餐廳/咖啡廳進系統
-  return places
-    .filter(looksLikeTravelPlace)
-    .sort((a, b) => calculateGooglePlaceTravelScore(b) - calculateGooglePlaceTravelScore(a));
+  return data.places || [];
 }
 
 export async function saveGooglePlaceToDatabase(place) {

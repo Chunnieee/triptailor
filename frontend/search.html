@@ -83,148 +83,128 @@
   </div>
 
   <script>
-    const API_BASE = "http://localhost:4000";
+  const API_BASE = "http://localhost:4000";
 
-    const keywordInput = document.getElementById("keyword-input");
-    const cityInput = document.getElementById("city-input");
-    const searchContent = document.querySelector(".search-content");
-    const filterButtons = document.querySelectorAll(".filter-row button");
+  const keywordInput = document.getElementById("keyword-input");
+  const cityInput = document.getElementById("city-input");
+  const searchContent = document.querySelector(".search-content");
+  const filterButtons = document.querySelectorAll(".filter-row button");
 
-    const resultContainer = document.createElement("div");
-    resultContainer.className = "search-results";
-    searchContent.appendChild(resultContainer);
+  const resultContainer = document.createElement("div");
+  resultContainer.className = "search-results";
+  searchContent.appendChild(resultContainer);
 
-    const userName = localStorage.getItem("user_name") || "User";
-    const profileName = document.querySelector(".profile-info span");
-    if (profileName) profileName.textContent = userName;
+  const userName = localStorage.getItem("user_name") || "User";
+  const profileName = document.querySelector(".profile-info span");
+  if (profileName) profileName.textContent = userName;
 
-    keywordInput.addEventListener("keydown", async function (e) {
-      if (e.key === "Enter") {
-        await searchAttractions();
-      }
+  keywordInput.addEventListener("keydown", async function (e) {
+    if (e.key === "Enter") {
+      await searchAttractions();
+    }
+  });
+
+  cityInput.addEventListener("keydown", async function (e) {
+    if (e.key === "Enter") {
+      await searchAttractions();
+    }
+  });
+
+  filterButtons.forEach(function (button) {
+    button.addEventListener("click", async function () {
+      const category = button.dataset.category || "";
+      await searchAttractions(category);
     });
+  });
 
-    cityInput.addEventListener("keydown", async function (e) {
-      if (e.key === "Enter") {
-        await searchAttractions();
-      }
-    });
+  async function searchAttractions(category = "") {
+    const keyword = keywordInput.value.trim();
+    const city = cityInput.value.trim();
 
-    filterButtons.forEach((button) => {
-      button.addEventListener("click", async function () {
-        const category = button.dataset.category;
+    if (!keyword && !city && !category) {
+      alert("Please enter a keyword, city, or choose a category.");
+      return;
+    }
 
-        if (!category) {
-          await loadAllAttractions();
-        } else {
-          await searchAttractions(category);
-        }
-      });
-    });
+    resultContainer.innerHTML = `<p class="loading-text">Searching...</p>`;
 
-    async function searchAttractions(category = "") {
-      const keyword = keywordInput.value.trim();
-      const city = cityInput.value.trim();
+    try {
+      const params = new URLSearchParams();
 
-      if (!keyword && !city && !category) {
-        alert("Please enter a keyword, city, or choose a category.");
+      if (keyword) params.append("keyword", keyword);
+      if (city) params.append("city", city);
+      if (category) params.append("category", category);
+
+      params.append("_t", Date.now().toString());
+
+      const response = await fetch(
+        `${API_BASE}/api/google-search?${params.toString()}`
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        resultContainer.innerHTML =
+          `<p class="error-text">${data.message || "Search failed."}</p>`;
         return;
       }
+
+      renderAttractions(data.results || []);
+    } catch (error) {
+      console.error("Search error:", error);
 
       resultContainer.innerHTML =
-        `<p class="loading-text">Searching...</p>`;
+        `<p class="error-text">Cannot connect to backend.</p>`;
+    }
+  }
 
-      try {
-        const params = new URLSearchParams();
+  function renderAttractions(attractions) {
+    const bigIcon = document.querySelector(".big-search-icon");
+    if (bigIcon) bigIcon.style.display = "none";
 
-        if (keyword) params.append("keyword", keyword);
-        if (city) params.append("city", city);
-        if (category) params.append("category", category);
-
-        const response = await fetch(
-          `${API_BASE}/api/google-search?${params.toString()}`
-        );
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          resultContainer.innerHTML =
-            `<p class="error-text">${data.message || "Search failed."}</p>`;
-          return;
-        }
-
-        renderAttractions(data.results || []);
-      } catch (error) {
-        console.error("Search error:", error);
-
-        resultContainer.innerHTML =
-          `<p class="error-text">${error.message}</p>`;
-      }
+    if (!Array.isArray(attractions) || attractions.length === 0) {
+      resultContainer.innerHTML = `<p class="empty-text">No attractions found.</p>`;
+      return;
     }
 
-    async function loadAllAttractions() {
-      resultContainer.innerHTML = `<p class="loading-text">Loading...</p>`;
+    resultContainer.innerHTML = attractions.map(function (att) {
+      const rating = att.avg_rating || att.google_rating || att.rating || "N/A";
+      const city = att.city || "Taiwan";
+      const category = att.categories || "Attraction";
+      const address = att.formatted_address || att.description || "";
+      const imageUrl = att.image_url || "images/default.jpg";
 
-      try {
-        const response = await fetch(`${API_BASE}/api/attractions`);
-        const data = await response.json();
-
-        if (!response.ok) {
-          resultContainer.innerHTML =
-            `<p class="error-text">${data.message || "Failed to load attractions."}</p>`;
-          return;
-        }
-
-        renderAttractions(Array.isArray(data) ? data : []);
-      } catch (error) {
-        console.error(error);
-        resultContainer.innerHTML =
-          `<p class="error-text">Cannot connect to backend.</p>`;
-      }
-    }
-
-    function renderAttractions(attractions) {
-      const bigIcon = document.querySelector(".big-search-icon");
-      if (bigIcon) bigIcon.style.display = "none";
-
-      if (!Array.isArray(attractions) || attractions.length === 0) {
-        resultContainer.innerHTML = `<p class="empty-text">No attractions found.</p>`;
-        return;
-      }
-
-      resultContainer.innerHTML = attractions.map((att) => {
-        const rating = att.avg_rating || att.google_rating || "N/A";
-        const city = att.city || "Taiwan";
-        const category = att.categories || "Attraction";
-        const address = att.formatted_address || att.description || "";
-        const imageUrl = att.image_url || "images/default.jpg";
-
-        return `
-          <div class="search-result-card" onclick="goToAttraction(${att.att_id})">
-            <img 
-              class="search-result-img" 
-              src="${imageUrl}" 
-              alt="${att.att_name || "Attraction"}"
-              onerror="this.onerror=null; this.src='images/default.jpg';"
-            />
-            <div class="search-result-info">
-              <h4>${att.att_name || "Attraction"}</h4>
-              <p>${address}</p>
-              <div class="search-result-meta">
-                <span><i class="fa-solid fa-location-dot"></i> ${city}</span>
-                <span><i class="fa-solid fa-bars"></i> ${category}</span>
-              </div>
-              <div class="rating">★★★★★ <span>${rating}</span></div>
+      return `
+        <div class="search-result-card" onclick="goToAttraction(${att.att_id})">
+          <img 
+            class="search-result-img" 
+            src="${imageUrl}" 
+            alt="${att.att_name || "Attraction"}"
+            onerror="this.onerror=null; this.src='images/default.jpg';"
+          />
+          <div class="search-result-info">
+            <h4>${att.att_name || "Attraction"}</h4>
+            <p>${address}</p>
+            <div class="search-result-meta">
+              <span><i class="fa-solid fa-location-dot"></i> ${city}</span>
+              <span><i class="fa-solid fa-bars"></i> ${category}</span>
             </div>
+            <div class="rating">★★★★★ <span>${rating}</span></div>
           </div>
-        `;
-      }).join("");
-    }
+        </div>
+      `;
+    }).join("");
+  }
 
-    function goToAttraction(attId) {
-      window.location.href = `attraction.html?id=${attId}`;
-    }
-  </script>
+  function goToAttraction(attId) {
+  if (!attId || attId === "null") {
+    alert("This place was found from Google, but it was not saved to database yet. Please try again.");
+    return;
+  }
+
+  window.location.href = `attraction.html?id=${attId}`;
+}
+</script>
 </body>
 
 </html>

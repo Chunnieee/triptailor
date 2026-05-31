@@ -38,100 +38,109 @@ function buildGoogleQuery({ keyword, city, category }) {
 ========================= */
 router.get("/google-search", async (req, res) => {
   try {
-    const { keyword, city, category } = req.query;
+    const { keyword = "", city = "", category = "" } = req.query;
 
-    if (!keyword && !city && !category) {
+    const cleanKeyword = String(keyword || "").trim();
+    const cleanCity = String(city || "").trim();
+    const cleanCategory = String(category || "").trim();
+
+    if (!cleanKeyword && !cleanCity && !cleanCategory) {
       return res.status(400).json({
-        message: "At least one of keyword, city, or category is required"
+        message: "Missing keyword, city, or category"
       });
     }
 
-    const googleQuery = buildGoogleQuery({ keyword, city, category });
+    let textQuery = "";
 
-    const googlePlaces = await searchGooglePlaces(googleQuery, {
-      maxResultCount: 15
+    if (cleanCity && cleanKeyword && cleanCategory) {
+      textQuery = `${cleanCity} ${cleanKeyword} ${cleanCategory}`;
+    } else if (cleanCity && cleanKeyword) {
+      textQuery = `${cleanCity} ${cleanKeyword}`;
+    } else if (cleanKeyword && cleanCategory) {
+      textQuery = `${cleanKeyword} ${cleanCategory} 台灣`;
+    } else if (cleanCity && cleanCategory) {
+      textQuery = `${cleanCity} ${cleanCategory}`;
+    } else if (cleanKeyword) {
+      textQuery = `${cleanKeyword} 台灣`;
+    } else if (cleanCity) {
+      textQuery = `${cleanCity} 景點`;
+    } else {
+      textQuery = `${cleanCategory} 台灣 景點`;
+    }
+
+    console.log("Google Places textQuery:", textQuery);
+
+    const googleResults = await searchGooglePlaces(textQuery, {
+      maxResultCount: 20
     });
 
-    const savedIds = [];
+    console.log("Google raw results count:", googleResults.length);
+    console.log(
+      "Google raw result names:",
+      googleResults.map((p) => p.displayName?.text || p.name || p.id)
+    );
 
-    for (const place of googlePlaces) {
-      const attId = await saveGooglePlaceToDatabase(place);
+    const results = [];
 
-      if (attId) {
-        savedIds.push(attId);
+    for (const place of googleResults) {
+      let attId = null;
+
+      try {
+        attId = await saveGooglePlaceToDatabase(place);
+      } catch (saveError) {
+        console.error("Save Google place failed:", saveError.message);
       }
-    }
 
-    const uniqueIds = [...new Set(savedIds)];
+      const attName =
+        place.displayName?.text ||
+        place.displayName ||
+        place.name ||
+        "Attraction";
 
-    if (uniqueIds.length === 0) {
-      return res.json({
-        source: "google_places_only",
-        keyword,
-        city,
-        category,
-        google_query_used: googleQuery,
-        google_count: googlePlaces.length,
-        count: 0,
-        results: []
+      const formattedAddress =
+        place.formattedAddress ||
+        place.formatted_address ||
+        "";
+
+      const rating =
+        place.rating ||
+        place.google_rating ||
+        null;
+
+      const photoName =
+        place.photos &&
+        place.photos.length > 0 &&
+        place.photos[0].name
+          ? place.photos[0].name
+          : null;
+
+      const imageUrl = photoName
+        ? `https://places.googleapis.com/v1/${photoName}/media?maxWidthPx=800&key=${process.env.GOOGLE_PLACES_API_KEY}`
+        : "images/default.jpg";
+
+      results.push({
+        att_id: attId,
+        google_place_id: place.id || null,
+        att_name: attName,
+        description: formattedAddress,
+        formatted_address: formattedAddress,
+        city: cleanCity || guessTaiwanCityFromAddress(formattedAddress),
+        district: "",
+        categories: cleanCategory || "Attraction",
+        google_rating: rating,
+        avg_rating: rating,
+        rating: rating,
+        image_url: imageUrl,
+        source: "google"
       });
     }
 
-    let sql = `
-      SELECT 
-        a.att_id,
-        a.att_name,
-        a.description,
-        a.ticket_price,
-        a.avg_rating,
-        a.google_rating,
-        COALESCE(a.google_rating, a.avg_rating) AS rating,
-        a.image_url,
-        a.formatted_address,
-        a.latitude,
-        a.longitude,
-        a.source,
-        l.city,
-        l.district,
-        GROUP_CONCAT(DISTINCT c.cate_name SEPARATOR ', ') AS categories
-      FROM attractions a
-      LEFT JOIN locations l ON a.location_id = l.location_id
-      LEFT JOIN attraction_categories ac ON a.att_id = ac.att_id
-      LEFT JOIN categories c ON ac.cate_id = c.cate_id
-      WHERE a.att_id IN (?)
-    `;
-
-    const params = [uniqueIds];
-
-    if (city) {
-      sql += `
-        AND (
-          l.city = ?
-          OR a.formatted_address LIKE ?
-        )
-      `;
-      params.push(city, `%${city}%`);
-    }
-
-    sql += `
-      GROUP BY a.att_id, l.city, l.district
-      ORDER BY 
-        COALESCE(a.google_rating, a.avg_rating, 0) DESC,
-        a.att_id DESC
-      LIMIT 30
-    `;
-
-    const [rows] = await pool.query(sql, params);
-
     res.json({
-      source: "google_places_only",
-      keyword,
-      city,
-      category,
-      google_query_used: googleQuery,
-      google_count: googlePlaces.length,
-      count: rows.length,
-      results: rows
+      source: "google_places_direct",
+      query_used: textQuery,
+      google_raw_count: googleResults.length,
+      count: results.length,
+      results
     });
   } catch (error) {
     console.error("Google search error:", error);
@@ -142,6 +151,7 @@ router.get("/google-search", async (req, res) => {
     });
   }
 });
+
 
 /* =========================
    ADMIN IMPORT TAIWAN ATTRACTIONS
@@ -460,4 +470,39 @@ router.get("/discover/random", async (req, res) => {
     });
   }
 });
+
+function guessTaiwanCityFromAddress(address = "") {
+  const text = String(address || "").replaceAll("臺", "台");
+
+  const cities = [
+    "台北市",
+    "新北市",
+    "桃園市",
+    "台中市",
+    "台南市",
+    "高雄市",
+    "基隆市",
+    "新竹市",
+    "新竹縣",
+    "苗栗縣",
+    "彰化縣",
+    "南投縣",
+    "雲林縣",
+    "嘉義市",
+    "嘉義縣",
+    "屏東縣",
+    "宜蘭縣",
+    "花蓮縣",
+    "台東縣",
+    "澎湖縣"
+  ];
+
+  for (const city of cities) {
+    if (text.includes(city)) {
+      return city;
+    }
+  }
+
+  return "Taiwan";
+}
 export default router;
