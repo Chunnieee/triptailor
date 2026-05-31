@@ -1,8 +1,8 @@
 import express from "express";
 import pool from "../db.js";
+import bcrypt from "bcrypt";
 
 const router = express.Router();
-
 // 取得使用者資料
 router.get("/users/:userId", async (req, res) => {
   try {
@@ -34,8 +34,9 @@ router.get("/users/:userId", async (req, res) => {
 router.put("/users/:userId", async (req, res) => {
   try {
     const { userId } = req.params;
-    const { name, phone_number, travel_freq } = req.body;
+    const { name, phone_number, travel_freq, new_password } = req.body;
 
+    // 更新基本資料
     await pool.query(
       `
       UPDATE users
@@ -46,6 +47,15 @@ router.put("/users/:userId", async (req, res) => {
       `,
       [name || null, phone_number || null, travel_freq || null, userId]
     );
+
+    // 如果有傳新密碼才更新
+    if (new_password) {
+      const hashed = await bcrypt.hash(new_password, 10);
+      await pool.query(
+        `UPDATE users SET password = ? WHERE user_id = ?`,
+        [hashed, userId]
+      );
+    }
 
     res.json({ message: "User profile updated successfully" });
   } catch (error) {

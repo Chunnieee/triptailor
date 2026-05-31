@@ -91,41 +91,22 @@
           </div>
         </div>
 
-        <!-- Travel Frequency -->
+        <!-- New Password -->
         <div class="input-group">
-          <label>Travel Frequency</label>
-
-          <div class="select-box">
-            <select id="edit-travel-freq">
-              <option value="">Select frequency</option>
-              <option value="Rarely">Rarely</option>
-              <option value="Sometimes">Sometimes</option>
-              <option value="Often">Often</option>
-            </select>
-
-            <i class="fa-solid fa-chevron-down select-icon"></i>
+          <label>New Password</label>
+          <div class="input-box">
+             <input type="password" id="edit-new-password" placeholder="New password" />
           </div>
         </div>
 
-        <!-- Preferred City -->
+        <!-- Confirm New Password -->
         <div class="input-group">
-          <label>Preferred City</label>
-
-        <div class="select-box">
-          <select id="edit-city">
-            <option value="">Select city</option>
-            <option value="台北市">台北市</option>
-            <option value="新北市">新北市</option>
-            <option value="桃園市">桃園市</option>
-            <option value="台中市">台中市</option>
-            <option value="台南市">台南市</option>
-            <option value="高雄市">高雄市</option>
-          </select>
-
-          <i class="fa-solid fa-chevron-down select-icon"></i>
+         <label>Confirm New Password</label>
+         <div class="input-box">
+           <input type="password" id="edit-confirm-password" placeholder="Confirm new password" />
+         </div>
         </div>
-      </div>
-
+        
       <!-- Save button -->
       <button class="save-btn" type="button">
         Save
@@ -226,13 +207,10 @@
           nameInput.value = user.name || "";
           emailInput.value = user.email || "";
           phoneInput.value = user.phone_number || "";
-          travelFreqInput.value = user.travel_freq || "";
-          travelFreqInput.value = user.travel_freq || "";
 
           localStorage.setItem("user_name", user.name || "");
           localStorage.setItem("user_email", user.email || "");
           localStorage.setItem("user_phone", user.phone_number || "");
-          localStorage.setItem("user_travel_freq", user.travel_freq || "");
 
           const savedAvatar = localStorage.getItem("user_avatar");
 
@@ -251,8 +229,6 @@
       async function saveProfile(userId) {
         const name = nameInput.value.trim();
         const phoneNumber = phoneInput.value.trim();
-        const travelFreq = travelFreqInput.value;
-        const city = cityInput.value;
 
 
         if (!name) {
@@ -269,7 +245,6 @@
             body: JSON.stringify({
               name: name,
               phone_number: phoneNumber,
-              travel_freq: travelFreq
             })
           });
 
@@ -282,8 +257,6 @@
 
           localStorage.setItem("user_name", name);
           localStorage.setItem("user_phone", phoneNumber);
-          localStorage.setItem("user_travel_freq", travelFreq);
-          localStorage.setItem("user_city", city);
 
 
           alert("Profile updated!");

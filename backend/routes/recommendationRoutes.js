@@ -140,6 +140,60 @@ router.post("/users/:userId/recommendations/generate", async (req, res) => {
         reasons.push("有景點圖片");
       }
 
+      if (profile.budget !== null) {
+  const budget = Number(profile.budget);
+  const price = Number(att.ticket_price || 0);
+  const isFree = price === 0;
+  const isLowPrice = price > 0 && price <= 150;
+  const isMidPrice = price > 150 && price <= 350;
+  const isHighPrice = price > 350;
+
+  if (budget <= 500) {
+    if (isFree) {
+      score += 25;
+      reasons.push("免費景點，符合低預算");
+    } else if (isLowPrice) {
+      score += 5;
+      reasons.push("票價尚可");
+    } else {
+      score -= 25;
+      reasons.push("票價超出低預算範圍");
+    }
+  } else if (budget <= 1000) {
+    if (isFree) {
+      score += 20;
+      reasons.push("免費入場");
+    } else if (isLowPrice) {
+      score += 15;
+      reasons.push("票價實惠");
+    } else if (isMidPrice) {
+      score += 5;
+      reasons.push("票價尚可");
+    } else {
+      score -= 15;
+      reasons.push("票價偏高");
+    }
+  } else if (budget <= 2000) {
+    if (isFree) {
+      score += 15;
+      reasons.push("免費入場");
+    } else if (isLowPrice || isMidPrice) {
+      score += 15;
+      reasons.push("在預算內");
+    } else if (isHighPrice) {
+      score += 8;
+      reasons.push("票價在可接受範圍");
+    }
+  } else {
+    if (isFree) {
+      score += 10;
+      reasons.push("免費入場");
+    } else {
+      score += 15;
+      reasons.push("在預算內");
+    }
+  }
+}
       if (!preferenceTags.includes("food")) {
         if (
           categories.includes("food") ||
