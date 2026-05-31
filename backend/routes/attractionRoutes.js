@@ -203,5 +203,118 @@ router.get("/attractions/:id", async (req, res) => {
     });
   }
 });
+// Google Routes API
+router.get("/attractions/:id/directions", async (req, res) => {
 
+  try {
+
+    const { id } = req.params;
+    const { lat, lng, mode } = req.query;
+
+    if (!lat || !lng) {
+      return res.status(400).json({
+        message: "User location is required"
+      });
+    }
+
+    const [rows] = await pool.query(
+      `
+      SELECT
+        att_id,
+        att_name,
+        latitude,
+        longitude
+      FROM attractions
+      WHERE att_id = ?
+      `,
+      [id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        message: "Attraction not found"
+      });
+    }
+
+    const attraction = rows[0];
+
+    if (!attraction.latitude || !attraction.longitude) {
+      return res.status(400).json({
+        message: "Attraction has no coordinates"
+      });
+    }
+
+    const response = await fetch(
+      "https://routes.googleapis.com/directions/v2:computeRoutes",
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+
+          "X-Goog-Api-Key":
+            process.env.GOOGLE_PLACES_API_KEY,
+
+          "X-Goog-FieldMask":
+  "routes.duration,routes.distanceMeters,routes.legs.steps.travelMode,routes.legs.steps.localizedValues,routes.legs.steps.transitDetails"
+        },
+
+        body: JSON.stringify({
+
+          origin: {
+            location: {
+              latLng: {
+                latitude: Number(lat),
+                longitude: Number(lng)
+              }
+            }
+          },
+
+          destination: {
+            location: {
+              latLng: {
+                latitude: Number(attraction.latitude),
+                longitude: Number(attraction.longitude)
+              }
+            }
+          },
+
+          travelMode: mode || "TRANSIT"
+
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+
+      return res.status(500).json({
+        message: "Google Routes API failed",
+        error: data
+      });
+    }
+
+    const route = data.routes?.[0];
+
+    if (!route) {
+
+      return res.status(404).json({
+        message: "No route found"
+      });
+    }
+
+    res.json({
+      duration: route.duration,
+      distance_meters: route.distanceMeters,
+      steps: route.legs?.[0]?.steps || []
+    });
+  } catch (error) {
+
+    res.status(500).json({
+      message: "Failed to get directions",
+      error: error.message
+    });
+  }
+});
 export default router;
