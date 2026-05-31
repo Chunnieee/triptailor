@@ -47,7 +47,7 @@
 
           <div class="stat-box">
             <strong>0</strong>
-            <small>favorites</small>
+            <small>bookmarks</small>
           </div>
         </section>
 
@@ -64,7 +64,7 @@
         </section>
 
         <div class="attraction-actions">
-          <a href="#" class="action-btn">Favorites</a>
+          <a href="#" class="action-btn">Bookmarks</a>
           <a href="#" class="action-btn">Reviews</a>
         </div>
 
@@ -149,19 +149,19 @@
             detailImage.alt = att.att_name || "Attraction Image";
 
             detailImage.onerror = function () {
-                this.onerror = null;
-                this.src = "images/default.jpg";
+            this.onerror = null;
+            this.src = "images/default.jpg";
             };
         }
 
         if (actions) {
           actions.innerHTML = `
-            <a href="#" class="action-btn" onclick="addFavorite(${att.att_id})">Favorites</a>
+            <a href="#" class="action-btn" onclick="addFavorite(${att.att_id})">Bookmarks</a>
             <a href="attraction_review.html?id=${att.att_id}" class="action-btn">Reviews</a>
           `;
         }
 
-        await loadTransportation(attId);
+        await loadGoogleDirections(attId);
 
       } catch (error) {
         console.error(error);
@@ -182,8 +182,10 @@
         const data = await response.json();
 
         if (!response.ok || !data || data.length === 0) {
-            await loadGoogleDirections(attId);
-            return;
+          transportCard.innerHTML = `
+            <p>No transportation information available.</p>
+          `;
+          return;
         }
 
         transportCard.innerHTML = data.map((item) => {
@@ -252,7 +254,7 @@
           return;
         }
 
-        alert("Added to favorites!");
+        alert("Added to bookmarks!");
         const bookmarkStat = document.querySelectorAll(".stat-box strong")[3];
         if (bookmarkStat) {
           bookmarkStat.textContent = Number(bookmarkStat.textContent) + 1;
@@ -263,110 +265,89 @@
       }
     }
     async function loadGoogleDirections(attId) {
-        const transportCard = document.querySelector(".transport-card");
+  const transportCard = document.querySelector(".transport-card");
 
-        if (!navigator.geolocation) {
-            transportCard.innerHTML = `
-                <p>GPS not supported.</p>
-            `;
-            return;
+  if (!transportCard) return;
+
+  if (!navigator.geolocation) {
+    transportCard.innerHTML = `<p>GPS not supported.</p>`;
+    return;
+  }
+
+  transportCard.innerHTML = `<p>Loading route information...</p>`;
+
+  navigator.geolocation.getCurrentPosition(
+    async function (position) {
+      const lat = position.coords.latitude;
+      const lng = position.coords.longitude;
+
+      try {
+        const response = await fetch(
+          `${API_BASE}/api/attractions/${attId}/directions?lat=${lat}&lng=${lng}&mode=TRANSIT`
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          transportCard.innerHTML = `<p>${data.message || "No route information available."}</p>`;
+          return;
         }
 
-        transportCard.innerHTML = `
-            <p>Loading route information...</p>
-        `;
+        const minutes = Math.round(parseInt(data.duration) / 60);
+        const km = (data.distance_meters / 1000).toFixed(1);
+        const steps = data.steps || [];
 
-        navigator.geolocation.getCurrentPosition(
-            async function (position) {
-                const lat = position.coords.latitude;
-                const lng = position.coords.longitude;
+        const routeModes = steps
+          .filter((step) => step.travelMode === "TRANSIT")
+          .map((step) => {
+            const vehicle =
+              step.transitDetails?.transitLine?.vehicle?.name?.text || "Public transport";
 
-                try {
-                    const response = await fetch(
-                        `${API_BASE}/api/attractions/${attId}/directions?lat=${lat}&lng=${lng}&mode=TRANSIT`
-                );
+            const line =
+              step.transitDetails?.transitLine?.nameShort ||
+              step.transitDetails?.transitLine?.name ||
+              "";
 
-                    const data = await response.json();
-
-                if (!response.ok) {
-                    transportCard.innerHTML = `
-                        <p>No route information available.</p>
-                    `;
-                    return;
-                }
-
-                const minutes = Math.round(parseInt(data.duration) / 60);
-                const km = (data.distance_meters / 1000).toFixed(1);
-
-                const steps = data.steps || [];
-
-                const routeModes = steps
-                    .map((step) => {
-
-                        const mode = step.travelMode || "ROUTE";
-
-                        const vehicle =
-                            step.transitDetails?.transitLine?.vehicle?.name?.text || "";
-
-                if (vehicle) return vehicle;
-
-                if (mode === "WALK") return "Walk";
-                if (mode === "TRANSIT") return "Public transport";
-                if (mode === "DRIVE") return "Drive";
-                if (mode === "BICYCLE") return "Bike";
-
-                return mode;
-
-            })
-
-            .filter((mode, index, array) => {
-                return index === 0 || mode !== array[index - 1];
-            });
+            return line ? `${vehicle} ${line}` : vehicle;
+          });
 
         const routeSummary =
-            routeModes.length > 0
-                ? routeModes.join(" → ")
-                : "Route available";
+          routeModes.length > 0
+            ? routeModes.join(" → ")
+            : "Walk / Route available";
 
         transportCard.innerHTML = `
-            <div class="transport-item">
+          <div class="transport-item">
+            <p>
+              <i class="fa-solid fa-route"></i>
+              Suggested route
+            </p>
 
-                <p>
-                    <i class="fa-solid fa-route"></i>
-                    Suggested route
-                </p>
+            <p>
+              <i class="fa-solid fa-location-arrow"></i>
+              ${routeSummary}
+            </p>
 
-                <p>
-                    <i class="fa-solid fa-location-arrow"></i>
-                    ${routeSummary}
-                </p>
+            <p>
+              <i class="fa-solid fa-clock"></i>
+              Total time: ${minutes} mins
+            </p>
 
-                <p>
-                    <i class="fa-solid fa-clock"></i>
-                    Total time: ${minutes} mins
-                </p>
-
-                <p>
-                    <i class="fa-solid fa-road"></i>
-                    Distance: ${km} km
-                </p>
-
-            </div>
+            <p>
+              <i class="fa-solid fa-road"></i>
+              Distance: ${km} km
+            </p>
+          </div>
         `;
-            } catch (error) {
-                console.error(error);
-                transportCard.innerHTML = `
-                    <p>Cannot load route information.</p>
-                `;
-            }
-        },
-
-        function () {
-            transportCard.innerHTML = `
-                <p>Please allow location access.</p>
-            `;
-        }
-    );
+      } catch (error) {
+        console.error(error);
+        transportCard.innerHTML = `<p>Cannot load route information.</p>`;
+      }
+    },
+    function () {
+      transportCard.innerHTML = `<p>Please allow location access.</p>`;
+    }
+  );
 }
   </script>
 </body>
