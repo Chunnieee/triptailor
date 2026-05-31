@@ -19,7 +19,7 @@
       <div class="stats">
         <div class="stat-card"id="bookmark-card">
           <i class="fa-regular fa-star"></i>
-          <div><p>BOOKMARKS</p><h3>0</h3></div>
+          <div><p>FAVORITES</p><h3>0</h3></div>
         </div>
         <div class="stat-card"id="review-card">
           <i class="fa-regular fa-comment"></i>
@@ -31,9 +31,11 @@
         <div class="card-title">
           <i class="fa-brands fa-pagelines"></i>
           <span>Set up Profile</span>
-          <i class="fa-solid fa-chevron-right arrow"></i>
+          <i class="fa-solid fa-chevron-right arrow" id="edit-profile-arrow"></i>
         </div>
         <div class="info-row"><i class="fa-regular fa-user"></i><span>username</span><p id="show-username">User</p></div>
+        <div class="info-row"><i class="fa-solid fa-venus-mars"></i><span>gender</span><p id="show-gender">Not set</p></div>
+        <div class="info-row"><i class="fa-regular fa-calendar"></i><span>birthday</span><p id="show-birthday">Not set</p></div>
         <div class="info-row"><i class="fa-regular fa-envelope"></i><span>email address</span><p id="show-email">user@email.com</p></div>
         <div class="info-row"><i class="fa-solid fa-phone"></i><span>phone</span><p id="show-phone">Not set</p></div>
        
@@ -83,7 +85,8 @@
         window.location.href = "my_review.html";
       });
 
-      document.getElementById("edit-profile-card").addEventListener("click", function () {
+      document.getElementById("edit-profile-arrow").addEventListener("click", function (e) {
+        e.stopPropagation();
         window.location.href = "profile_edit.html";
       });
 
@@ -109,29 +112,34 @@
 
         document.getElementById("show-name").textContent = user.name || "User";
         document.getElementById("show-username").textContent = user.name || "User";
+        document.getElementById("show-gender").textContent = user.gender || localStorage.getItem("user_gender") || "Not set";
+        document.getElementById("show-birthday").textContent = formatBirthday(user.birthday || localStorage.getItem("user_birthday"));
         document.getElementById("show-email").textContent = user.email || "user@email.com";
         document.getElementById("show-phone").textContent = user.phone_number || "Not set";
-        const travelFreqEl = document.getElementById("show-travel-freq");
-
-          if (travelFreqEl) {
-            travelFreqEl.textContent = user.travel_freq || "Not set";
-          }
-
-        const cityEl = document.getElementById("show-city");
-
-          if (cityEl) {
-            cityEl.textContent =
-            localStorage.getItem("user_city") || "Not set";
-          }
+        
         localStorage.setItem("user_name", user.name || "User");
         localStorage.setItem("user_email", user.email || "");
         localStorage.setItem("user_phone", user.phone_number || "");
-        localStorage.setItem("user_travel_freq", user.travel_freq || "");
+        localStorage.setItem("user_gender", user.gender || localStorage.getItem("user_gender") || "");
+        localStorage.setItem("user_birthday", user.birthday || localStorage.getItem("user_birthday") || "");
+
       } catch (error) {
         console.error(error);
         alert("Cannot connect to backend.");
       }
     }
+
+    function formatBirthday(value) {
+        if (!value) return "Not set";
+
+        const date = new Date(value);
+
+        if (isNaN(date.getTime())) {
+          return value;
+        }
+
+       return date.toISOString().split("T")[0];
+      }
 
     async function loadProfileStats(userId) {
       try {

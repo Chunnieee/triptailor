@@ -1,16 +1,27 @@
 import express from "express";
+import bcrypt from "bcryptjs";
 import pool from "../db.js";
-import bcrypt from "bcrypt";
 
 const router = express.Router();
-// 取得使用者資料
+
+/* =========================
+   GET USER PROFILE
+   GET /api/users/:userId
+========================= */
 router.get("/users/:userId", async (req, res) => {
   try {
     const { userId } = req.params;
 
     const [rows] = await pool.query(
       `
-      SELECT user_id, name, email, phone_number, travel_freq, created_at
+      SELECT 
+        user_id,
+        name,
+        email,
+        phone_number,
+        gender,
+        birthday,
+        created_at
       FROM users
       WHERE user_id = ?
       `,
@@ -18,11 +29,15 @@ router.get("/users/:userId", async (req, res) => {
     );
 
     if (rows.length === 0) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({
+        message: "User not found"
+      });
     }
 
     res.json(rows[0]);
   } catch (error) {
+    console.error("Failed to get user profile:", error);
+
     res.status(500).json({
       message: "Failed to get user profile",
       error: error.message
@@ -30,35 +45,53 @@ router.get("/users/:userId", async (req, res) => {
   }
 });
 
-// 修改使用者資料
+/* =========================
+   UPDATE USER PROFILE
+   PUT /api/users/:userId
+
+   Only update:
+   - name
+   - phone_number
+   - password_hash
+
+   Do NOT update:
+   - gender
+   - birthday
+========================= */
 router.put("/users/:userId", async (req, res) => {
   try {
     const { userId } = req.params;
-    const { name, phone_number, travel_freq, new_password } = req.body;
+    const { name, phone_number, password } = req.body;
 
-    // 更新基本資料
+    let passwordHash = null;
+
+    if (password) {
+      passwordHash = await bcrypt.hash(password, 10);
+    }
+
     await pool.query(
       `
       UPDATE users
-      SET name = COALESCE(?, name),
-          phone_number = COALESCE(?, phone_number),
-          travel_freq = COALESCE(?, travel_freq)
+      SET 
+        name = COALESCE(?, name),
+        phone_number = COALESCE(?, phone_number),
+        password_hash = COALESCE(?, password_hash)
       WHERE user_id = ?
       `,
-      [name || null, phone_number || null, travel_freq || null, userId]
+      [
+        name || null,
+        phone_number || null,
+        passwordHash,
+        userId
+      ]
     );
 
-    // 如果有傳新密碼才更新
-    if (new_password) {
-      const hashed = await bcrypt.hash(new_password, 10);
-      await pool.query(
-        `UPDATE users SET password = ? WHERE user_id = ?`,
-        [hashed, userId]
-      );
-    }
-
-    res.json({ message: "User profile updated successfully" });
+    res.json({
+      message: "User profile updated successfully"
+    });
   } catch (error) {
+    console.error("Failed to update user profile:", error);
+
     res.status(500).json({
       message: "Failed to update user profile",
       error: error.message
