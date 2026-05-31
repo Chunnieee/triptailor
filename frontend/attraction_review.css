@@ -1,0 +1,289 @@
+/* =========================
+   REVIEW PAGE
+========================= */
+
+.review-phone {
+  width: 390px;
+  min-height: 844px;
+
+  background: #ffffff;
+
+  padding: 22px 18px;
+
+  color: var(--dark-green);
+}
+
+/* =========================
+   TOP PROFILE
+========================= */
+
+.review-profile-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.profile-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  font-size: 16px;
+  color: var(--dark-green);
+}
+
+.profile-icon {
+  width: 42px;
+  height: 42px;
+
+  border: 2px solid var(--dark-green);
+  border-radius: 50%;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  font-size: 20px;
+  color: var(--dark-green);
+
+  background: #ecece7;
+}
+
+/* =========================
+   TITLE ROW
+========================= */
+
+.review-title-row {
+  margin-top: 22px;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.review-title-row h2 {
+  font-size: 22px;
+  color: #111;
+}
+
+/* =========================
+   BACK BUTTON
+========================= */
+
+.review-back-btn {
+  width: 34px;
+  height: 34px;
+
+  border-radius: 50%;
+  border: 2px solid var(--light-green);
+
+  background: white;
+
+  color: var(--light-green);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  cursor: pointer;
+
+  font-size: 16px;
+}
+
+/* =========================
+   ATTRACTION NAME
+========================= */
+
+.review-attraction-name {
+  margin-top: 34px;
+
+  text-align: center;
+
+  font-size: 22px;
+
+  color: #111;
+}
+
+/* =========================
+   RATING SUMMARY
+========================= */
+
+.review-summary {
+  margin-top: 28px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  gap: 34px;
+}
+
+.review-score {
+  text-align: center;
+}
+
+.review-score h3 {
+  font-size: 58px;
+
+  color: var(--dark-green);
+
+  line-height: 1;
+}
+
+.filled-stars {
+  margin-top: 8px;
+
+  font-size: 20px;
+
+  letter-spacing: 1px;
+
+  color: var(--dark-green);
+}
+
+.review-score p {
+  margin-top: 6px;
+
+  font-size: 13px;
+
+  color: var(--dark-green);
+}
+
+/* =========================
+   RATING BARS
+========================= */
+
+.review-bars {
+  width: 150px;
+}
+
+.bar {
+  width: 100%;
+  height: 8px;
+
+  background: var(--light-green);
+
+  border-radius: 999px;
+
+  margin-bottom: 10px;
+
+  overflow: hidden;
+}
+
+.bar-fill {
+  display: block;
+
+  height: 100%;
+
+  background: var(--dark-green);
+
+  border-radius: 999px;
+}
+
+.fill-5 {
+  width: 86%;
+}
+
+.fill-4 {
+  width: 38%;
+}
+
+.fill-3 {
+  width: 14%;
+}
+
+.fill-2 {
+  width: 0%;
+}
+
+.fill-1 {
+  width: 6%;
+}
+
+/* =========================
+   WRITE REVIEW
+========================= */
+
+.write-review-row {
+  margin-top: 26px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.write-review-text p {
+  font-size: 14px;
+
+  line-height: 1.5;
+
+  color: #111;
+}
+
+.empty-stars {
+  text-decoration: none;
+
+  color: var(--dark-green);
+
+  font-size: 32px;
+
+  letter-spacing: 2px;
+}
+
+/* =========================
+   REVIEW CARD
+========================= */
+
+.user-review-card {
+  margin-top: 16px;
+
+  background: #dfe6dc;
+
+  border-radius: 16px;
+
+  padding: 16px;
+}
+
+.review-user-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  color: var(--dark-green);
+
+  font-size: 14px;
+}
+
+.small-user-icon {
+  width: 28px;
+  height: 28px;
+
+  border-radius: 50%;
+
+  background: var(--light-green);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  color: var(--dark-green);
+
+  font-size: 14px;
+}
+
+.card-stars {
+  margin-top: 10px;
+
+  font-size: 18px;
+
+  color: var(--dark-green);
+}
+
+.user-review-card p {
+  margin-top: 10px;
+
+  line-height: 1.7;
+
+  font-size: 14px;
+
+  color: #111;
+}

@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>TripTailor Home</title>
+
+  <link rel="stylesheet" href="common.css" />
+  <link rel="stylesheet" href="home.css" />
+
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+  />
+</head>
+
+<body>
+  <div class="app-page">
+    <div class="app-phone">
+
+      <!-- Top Profile -->
+      <header class="top-profile">
+        <div class="profile-info">
+          <div class="profile-icon">
+            <i class="fa-regular fa-user"></i>
+          </div>
+          <span>User</span>
+        </div>
+      </header>
+
+      <!-- Home Content -->
+      <main class="home-content">
+
+        <!-- Greeting -->
+        <section class="greeting">
+          <h3>Hi, User!</h3>
+          <h3>Where do you want to go today?</h3>
+        </section>
+
+        <!-- Recommendation Section -->
+        <section class="home-section">
+          <p class="section-title">Recommendation for you</p>
+          <div class="card-scroll" id="recommendation-list">
+            <p class="loading-text">Loading...</p>
+          </div>
+        </section>
+
+       <!-- Explore More Section -->
+<section class="home-section">
+  <p class="section-title" id="explore-more-title">Explore more in your city</p>
+  <div class="card-scroll" id="nearby-list">
+    <p class="loading-text">Loading...</p>
+  </div>
+</section>
+
+      </main>
+
+      <!-- Bottom Navigation -->
+      <nav class="bottom-nav">
+        <a href="home.html" class="active">
+          <i class="fa-solid fa-house"></i>
+        </a>
+
+        <a href="search.html">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </a>
+
+        <a href="favorites.html">
+          <i class="fa-regular fa-star"></i>
+        </a>
+
+        <a href="profile.html">
+          <i class="fa-regular fa-user"></i>
+        </a>
+      </nav>
+
+    </div>
+  </div>
+<script>
+  const API_BASE = "http://localhost:4000";
+
+  document.addEventListener("DOMContentLoaded", async function () {
+    const userName = localStorage.getItem("user_name") || "User";
+
+    const profileName = document.querySelector(".profile-info span");
+    if (profileName) {
+      profileName.textContent = userName;
+    }
+
+    const greetingTitles = document.querySelectorAll(".greeting h3");
+    if (greetingTitles.length > 0) {
+      greetingTitles[0].textContent = `Hi, ${userName}!`;
+    }
+
+    updateExploreMoreTitle();
+
+    await loadHomeRecommendations();
+    await loadExploreMoreInCity();
+  });
+
+  function getPreferredCity() {
+    return localStorage.getItem("user_preferred_city") || "";
+  }
+
+  function getInterestTag() {
+    return localStorage.getItem("user_interest_tag") || "";
+  }
+
+  function getFirstInterest() {
+    const interestTag = getInterestTag();
+
+    if (!interestTag) {
+      return "";
+    }
+
+    return interestTag.split(",")[0].trim();
+  }
+
+  function updateExploreMoreTitle() {
+    const title = document.getElementById("explore-more-title");
+    const city = getPreferredCity();
+
+    if (!title) return;
+
+    if (city) {
+      title.textContent = `Explore more in ${city}`;
+    } else {
+      title.textContent = "Explore more in Taiwan";
+    }
+  }
+
+  function shuffleArray(array) {
+    return array
+      .map(function (item) {
+        return {
+          item: item,
+          sort: Math.random()
+        };
+      })
+      .sort(function (a, b) {
+        return a.sort - b.sort;
+      })
+      .map(function (obj) {
+        return obj.item;
+      });
+  }
+
+  function getCategoryChineseKeyword(category) {
+    const value = (category || "").toLowerCase();
+
+    if (value === "nature") {
+      return "自然景點 公園 山 海邊 湖泊";
+    }
+
+    if (value === "culture") {
+      return "文化景點 文創 寺廟 老街";
+    }
+
+    if (value === "shopping") {
+      return "逛街 商圈 百貨 夜市 市場";
+    }
+
+    if (value === "food") {
+      return "美食 小吃 夜市 餐廳";
+    }
+
+    if (value === "landmark") {
+      return "地標 必去景點 觀光景點";
+    }
+
+    if (value === "family") {
+      return "親子景點 適合家庭 公園";
+    }
+
+    if (value === "historical") {
+      return "歷史 古蹟 老街 文化景點";
+    }
+
+    if (value === "museum") {
+      return "博物館 美術館 展覽";
+    }
+
+    return "景點";
+  }
+
+  function buildRecommendationKeywords(city, category) {
+    const categoryKeyword = getCategoryChineseKeyword(category);
+
+    if (city && category) {
+      return shuffleArray([
+        `${city} ${categoryKeyword}`,
+        `${city} ${categoryKeyword} 推薦`,
+        `${city} ${categoryKeyword} 必去`,
+        `${city} ${categoryKeyword} 觀光`
+      ]);
+    }
+
+    if (city) {
+      return shuffleArray([
+        `${city} 景點`,
+        `${city} 必去景點`,
+        `${city} 熱門景點`,
+        `${city} 觀光景點`,
+        `${city} 旅遊景點`
+      ]);
+    }
+
+    if (category) {
+      return shuffleArray([
+        `台灣 ${categoryKeyword}`,
+        `台灣 ${categoryKeyword} 推薦`,
+        `台灣 ${categoryKeyword} 必去`
+      ]);
+    }
+
+    return shuffleArray([
+      "台灣 熱門景點",
+      "台灣 必去景點",
+      "台灣 觀光景點",
+      "台灣 旅遊景點"
+    ]);
+  }
+
+  function buildExploreMoreKeywords(city) {
+    if (city) {
+      return shuffleArray([
+        `${city} 景點`,
+        `${city} 必去景點`,
+        `${city} 熱門景點`,
+        `${city} 觀光景點`,
+        `${city} 旅遊景點`,
+        `${city} 一日遊景點`
+      ]);
+    }
+
+    return shuffleArray([
+      "台灣 熱門景點",
+      "台灣 必去景點",
+      "台灣 觀光景點",
+      "台灣 旅遊景點"
+    ]);
+  }
+
+  function categoryMatches(att, selectedCategory) {
+    if (!selectedCategory) {
+      return true;
+    }
+
+    const categoryText = `
+      ${att.categories || ""}
+      ${att.att_name || ""}
+      ${att.description || ""}
+      ${att.formatted_address || ""}
+    `.toLowerCase();
+
+    const selected = selectedCategory.toLowerCase();
+
+    const aliases = {
+      nature: [
+        "nature", "natural", "park", "mountain", "lake", "forest", "sea", "beach",
+        "自然", "公園", "山", "湖", "森林", "海邊", "步道"
+      ],
+      culture: [
+        "culture", "cultural", "temple", "creative", "old street",
+        "文化", "文創", "寺", "廟", "老街"
+      ],
+      shopping: [
+        "shopping", "market", "mall", "night market", "store",
+        "逛街", "商圈", "百貨", "夜市", "市場", "購物"
+      ],
+      food: [
+        "food", "restaurant", "night market", "cafe",
+        "美食", "小吃", "餐廳", "夜市", "咖啡"
+      ],
+      landmark: [
+        "landmark", "sightseeing", "tourist attraction",
+        "地標", "觀光", "景點"
+      ],
+      family: [
+        "family", "zoo", "park",
+        "親子", "家庭", "動物園", "公園"
+      ],
+      historical: [
+        "historical", "history", "historic", "heritage", "old street", "temple",
+        "歷史", "古蹟", "文化", "老街", "寺", "廟"
+      ],
+      museum: [
+        "museum", "museums", "gallery", "exhibition",
+        "博物館", "美術館", "展覽"
+      ]
+    };
+
+    const keywords = aliases[selected] || [selected];
+
+    return keywords.some(function (keyword) {
+      return categoryText.includes(keyword.toLowerCase());
+    });
+  }
+
+  function cityMatches(att, selectedCity) {
+    if (!selectedCity) {
+      return true;
+    }
+
+    const attCity = att.city || "";
+    const address = att.formatted_address || "";
+    const name = att.att_name || "";
+
+    return (
+      attCity === selectedCity ||
+      address.includes(selectedCity) ||
+      name.includes(selectedCity)
+    );
+  }
+
+  async function loadHomeRecommendations() {
+    const recommendationList = document.getElementById("recommendation-list");
+
+    recommendationList.innerHTML = `
+      <p class="loading-text">Loading recommendations...</p>
+    `;
+
+    const city = getPreferredCity();
+    const category = getFirstInterest();
+
+    console.log("推薦城市:", city);
+    console.log("推薦類別:", category);
+
+    await loadRecommendedAttractionsInto(recommendationList, city, category);
+  }
+
+  async function loadExploreMoreInCity() {
+    const nearbyList = document.getElementById("nearby-list");
+
+    nearbyList.innerHTML = `
+      <p class="loading-text">Loading more places...</p>
+    `;
+
+    const city = getPreferredCity();
+
+    console.log("Explore more city:", city);
+
+    await loadExploreMoreInto(nearbyList, city);
+  }
+
+  async function fetchGoogleSearchResults(keyword, city = "") {
+    const params = new URLSearchParams();
+
+    params.append("keyword", keyword);
+
+    if (city) {
+      params.append("city", city);
+    }
+
+    params.append("_t", Date.now().toString());
+    params.append("_r", Math.random().toString());
+
+    const url = `${API_BASE}/api/google-search?${params.toString()}`;
+    console.log("Search URL:", url);
+
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error("Search failed:", data);
+      return [];
+    }
+
+    return Array.isArray(data.results) ? data.results : [];
+  }
+
+  async function loadRecommendedAttractionsInto(container, city, category) {
+    try {
+      const keywords = buildRecommendationKeywords(city, category);
+
+      let finalResults = [];
+
+      for (const keyword of keywords) {
+        let results = await fetchGoogleSearchResults(keyword, city);
+
+        results = results.filter(function (att) {
+          return cityMatches(att, city);
+        });
+
+        if (category) {
+          results = results.filter(function (att) {
+            return categoryMatches(att, category);
+          });
+        }
+
+        finalResults = finalResults.concat(results);
+
+        if (finalResults.length >= 6) {
+          break;
+        }
+      }
+
+      finalResults = removeDuplicateAttractions(finalResults);
+      finalResults = shuffleArray(finalResults);
+
+      if (finalResults.length === 0 && city && category) {
+        console.log("類別找不到，改用城市推薦");
+
+        const fallbackKeywords = buildRecommendationKeywords(city, "");
+
+        for (const keyword of fallbackKeywords) {
+          let results = await fetchGoogleSearchResults(keyword, city);
+
+          results = results.filter(function (att) {
+            return cityMatches(att, city);
+          });
+
+          finalResults = finalResults.concat(results);
+
+          if (finalResults.length >= 6) {
+            break;
+          }
+        }
+
+        finalResults = removeDuplicateAttractions(finalResults);
+        finalResults = shuffleArray(finalResults);
+      }
+
+      if (finalResults.length === 0) {
+        container.innerHTML = `
+          <p class="empty-text">No matching attractions found.</p>
+        `;
+        return;
+      }
+
+      container.innerHTML = "";
+
+      finalResults.slice(0, 6).forEach(function (att) {
+        container.appendChild(createPlaceCard(att));
+      });
+    } catch (error) {
+      console.error("Recommendation error:", error);
+
+      container.innerHTML = `
+        <p class="empty-text">Cannot connect to backend.</p>
+      `;
+    }
+  }
+
+  async function loadExploreMoreInto(container, city) {
+    try {
+      const keywords = buildExploreMoreKeywords(city);
+
+      let finalResults = [];
+
+      for (const keyword of keywords) {
+        let results = await fetchGoogleSearchResults(keyword, city);
+
+        results = results.filter(function (att) {
+          return cityMatches(att, city);
+        });
+
+        finalResults = finalResults.concat(results);
+
+        if (finalResults.length >= 6) {
+          break;
+        }
+      }
+
+      finalResults = removeDuplicateAttractions(finalResults);
+      finalResults = shuffleArray(finalResults);
+
+      if (finalResults.length === 0) {
+        container.innerHTML = `
+          <p class="empty-text">No more places found.</p>
+        `;
+        return;
+      }
+
+      container.innerHTML = "";
+
+      finalResults.slice(0, 6).forEach(function (att) {
+        container.appendChild(createPlaceCard(att));
+      });
+    } catch (error) {
+      console.error("Explore more error:", error);
+
+      container.innerHTML = `
+        <p class="empty-text">Cannot connect to backend.</p>
+      `;
+    }
+  }
+
+  function removeDuplicateAttractions(results) {
+    const uniqueMap = new Map();
+
+    results.forEach(function (att) {
+      const key = att.att_id || att.att_name;
+
+      if (key && !uniqueMap.has(key)) {
+        uniqueMap.set(key, att);
+      }
+    });
+
+    return Array.from(uniqueMap.values());
+  }
+
+  function createPlaceCard(att) {
+    const link = document.createElement("a");
+    link.href = `attraction.html?id=${att.att_id}`;
+    link.className = "card-link";
+
+    const rating = att.rating || att.google_rating || att.avg_rating || "N/A";
+    const city = att.city || "Taiwan";
+    const category = att.categories || "Attraction";
+    const imageUrl = att.image_url || "images/default.jpg";
+
+    link.innerHTML = `
+      <div class="place-card">
+        <img 
+          src="${imageUrl}" 
+          alt="${att.att_name || "Attraction"}" 
+          onerror="this.onerror=null; this.src='images/default.jpg';"
+        />
+        <h4>${att.att_name || "Attraction"}</h4>
+        <div class="place-meta">
+          <span><i class="fa-solid fa-location-dot"></i> ${city}</span>
+          <span><i class="fa-solid fa-bars"></i> ${category}</span>
+        </div>
+        <div class="rating">★★★★★ <span>${rating}</span></div>
+      </div>
+    `;
+
+    return link;
+  }
+</script>
+</body>
+</html>

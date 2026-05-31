@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>TripTailor Preferences</title>
+
+  <link rel="stylesheet" href="preference1.css" />
+
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+  />
+</head>
+
+<body>
+
+  <div class="page">
+
+    <div class="phone">
+
+      <button class="page-back-btn" onclick="window.location.href='profile.html'">
+           <i class="fa-solid fa-chevron-left"></i>
+        </button>
+
+      <div class="user-bar">
+
+        <div class="user-photo">
+          <i class="fa-regular fa-user"></i>
+        </div>
+
+        <span id="preference-user-name">Sophie Shih</span>
+      </div>
+
+      <h1>preferences</h1>
+
+      <form class="preference-form">
+
+        <!-- Interest -->
+        <div class="preference-card" data-field="interest_tag">
+          <h2>Interest</h2>
+
+          <div class="tag-group">
+            <button type="button" class="tag">Nature</button>
+            <button type="button" class="tag">Culture</button>
+            <button type="button" class="tag">Shopping</button>
+            <button type="button" class="tag">Food</button>
+            <button type="button" class="tag">Landmark</button>
+            <button type="button" class="tag">Family</button>
+            <button type="button" class="tag">Historical</button>
+            <button type="button" class="tag">Museum</button>
+          </div>
+        </div>
+
+        <!-- City -->
+<div class="preference-card" data-field="preferred_city">
+  <h2>Preferred City</h2>
+
+  <div class="tag-group">
+    <button type="button" class="tag">台北市</button>
+    <button type="button" class="tag">新北市</button>
+    <button type="button" class="tag">桃園市</button>
+    <button type="button" class="tag">台中市</button>
+    <button type="button" class="tag">台南市</button>
+    <button type="button" class="tag">高雄市</button>
+    <button type="button" class="tag">基隆市</button>
+    <button type="button" class="tag">新竹市</button>
+    <button type="button" class="tag">新竹縣</button>
+    <button type="button" class="tag">苗栗縣</button>
+    <button type="button" class="tag">彰化縣</button>
+    <button type="button" class="tag">南投縣</button>
+    <button type="button" class="tag">雲林縣</button>
+    <button type="button" class="tag">嘉義市</button>
+    <button type="button" class="tag">嘉義縣</button>
+    <button type="button" class="tag">屏東縣</button>
+    <button type="button" class="tag">宜蘭縣</button>
+    <button type="button" class="tag">花蓮縣</button>
+    <button type="button" class="tag">台東縣</button>
+    <button type="button" class="tag">澎湖縣</button>
+  </div>
+</div>
+        <!-- Budget -->
+        <div class="preference-card" data-field="budget">
+          <h2>Budget per day</h2>
+
+          <div class="tag-group">
+            <button type="button" class="tag">NT$0 - 500</button>
+            <button type="button" class="tag">NT$500 - 1,000</button>
+            <button type="button" class="tag">NT$1,500 - 2,000</button>
+            <button type="button" class="tag">NT$2,500 - 3,000</button>
+          </div>
+        </div>
+
+      
+
+        <!-- Save -->
+        <button type="button" class="save-btn save-preference-btn">
+          Save
+        </button>
+
+      </form>
+
+      <nav class="bottom-nav">
+        <a href="home.html">
+          <i class="fa-solid fa-house"></i>
+        </a>
+
+        <a href="search.html">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </a>
+
+        <a href="favorites.html">
+          <i class="fa-regular fa-star"></i>
+        </a>
+
+        <a href="profile.html">
+          <i class="fa-regular fa-user"></i>
+        </a>
+      </nav>
+
+    </div>
+
+  </div>
+
+  <script>
+  const API_BASE = "http://localhost:4000";
+
+  document.addEventListener("DOMContentLoaded", async function () {
+    const userId = localStorage.getItem("user_id");
+    const userName = localStorage.getItem("user_name") || "User";
+
+    document.getElementById("preference-user-name").textContent = userName;
+
+    if (!userId) {
+      alert("Please log in first.");
+      window.location.href = "login.html";
+      return;
+    }
+
+    document.querySelectorAll(".tag").forEach(function (tag) {
+      tag.addEventListener("click", function () {
+        const card = tag.closest(".preference-card");
+        const field = card.dataset.field;
+
+        if (field === "budget" || field === "preferred_city") {
+          card.querySelectorAll(".tag").forEach(function (item) {
+            item.classList.remove("selected");
+          });
+        }
+
+        tag.classList.toggle("selected");
+      });
+    });
+
+    await loadPreferences(userId);
+
+    document
+      .querySelector(".save-preference-btn")
+      .addEventListener("click", async function () {
+        await savePreferences(userId);
+      });
+  });
+
+  async function loadPreferences(userId) {
+    try {
+      const response = await fetch(`${API_BASE}/api/users/${userId}/preferences`);
+
+      if (response.status === 404) {
+        return;
+      }
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error(data.message || "Failed to load preferences.");
+        return;
+      }
+
+      markSelectedTag("budget", data.budget);
+      markSelectedTag("interest_tag", data.interest_tag);
+
+      const savedCity = data.preferred_city || localStorage.getItem("user_preferred_city");
+      markSelectedTag("preferred_city", savedCity);
+
+      if (data.budget) {
+        localStorage.setItem("user_budget", data.budget);
+      }
+
+      if (data.interest_tag) {
+        localStorage.setItem("user_interest_tag", data.interest_tag);
+      }
+
+      if (savedCity) {
+        localStorage.setItem("user_preferred_city", savedCity);
+      }
+    } catch (error) {
+      console.error("Load preferences error:", error);
+    }
+  }
+
+  function markSelectedTag(fieldName, value) {
+    if (!value) return;
+
+    const card = document.querySelector(`[data-field="${fieldName}"]`);
+    if (!card) return;
+
+    let values = [];
+
+    if (fieldName === "budget") {
+      const budgetText = convertBudgetNumberToText(value);
+      values = [budgetText];
+    } else {
+      values = value
+        .toString()
+        .split(",")
+        .map(function (item) {
+          return item.trim();
+        });
+    }
+
+    card.querySelectorAll(".tag").forEach(function (tag) {
+      if (values.includes(tag.textContent.trim())) {
+        tag.classList.add("selected");
+      }
+    });
+  }
+
+  async function savePreferences(userId) {
+    const budget = getSelectedSingleValue("budget");
+    const interestTag = getSelectedMultipleValues("interest_tag");
+    const preferredCity = getSelectedSingleValue("preferred_city");
+
+    if (!budget && !interestTag && !preferredCity) {
+      alert("Please choose at least one preference.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE}/api/users/${userId}/preferences`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+  budget: budget,
+  interest_tag: interestTag,
+  preferred_city: preferredCity
+})
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.message || "Failed to save preferences.");
+        return;
+      }
+
+      if (budget) {
+  localStorage.setItem("user_budget", budget);
+} else {
+  localStorage.removeItem("user_budget");
+}
+
+if (interestTag) {
+  localStorage.setItem("user_interest_tag", interestTag);
+} else {
+  localStorage.removeItem("user_interest_tag");
+}
+
+if (preferredCity) {
+  localStorage.setItem("user_preferred_city", preferredCity);
+} else {
+  localStorage.removeItem("user_preferred_city");
+}
+
+      alert("Preference saved!");
+      window.location.href = "home.html";
+    } catch (error) {
+      console.error("Save preferences error:", error);
+      alert("Cannot connect to backend.");
+    }
+  }
+
+  function getSelectedSingleValue(fieldName) {
+    const selected = document.querySelector(
+      `[data-field="${fieldName}"] .tag.selected`
+    );
+
+    if (!selected) {
+      return "";
+    }
+
+    const value = selected.textContent.trim();
+
+    if (fieldName === "budget") {
+      return convertBudgetTextToNumber(value);
+    }
+
+    return value;
+  }
+
+  function getSelectedMultipleValues(fieldName) {
+    const selectedTags = document.querySelectorAll(
+      `[data-field="${fieldName}"] .tag.selected`
+    );
+
+    const values = [];
+
+    selectedTags.forEach(function (tag) {
+      values.push(tag.textContent.trim());
+    });
+
+    return values.join(",");
+  }
+
+  function convertBudgetTextToNumber(value) {
+    if (value === "NT$0 - 500") return 500;
+    if (value === "NT$500 - 1,000") return 1000;
+    if (value === "NT$1,500 - 2,000") return 2000;
+    if (value === "NT$2,500 - 3,000") return 3000;
+
+    return "";
+  }
+
+  function convertBudgetNumberToText(value) {
+    const numberValue = Number(value);
+
+    if (numberValue === 500) return "NT$0 - 500";
+    if (numberValue === 1000) return "NT$500 - 1,000";
+    if (numberValue === 2000) return "NT$1,500 - 2,000";
+    if (numberValue === 3000) return "NT$2,500 - 3,000";
+
+    return "";
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,137 @@
+/* =========================
+   MY REVIEW PAGE
+========================= */
+
+.my-review-phone {
+  width: 390px;
+  height: 844px;
+  background: #ffffff;
+  position: relative;
+  overflow: hidden;
+  padding: 22px 18px 96px;
+  color: var(--dark-green);
+}
+
+/* Header */
+.my-review-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.my-review-back-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 3px solid var(--light-green);
+  background: #ffffff;
+  color: var(--light-green);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.profile-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #111;
+  font-size: 14px;
+}
+
+.profile-icon {
+  width: 42px;
+  height: 42px;
+  border: 3px solid var(--light-green);
+  border-radius: 50%;
+  background: #f4f4f4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #111;
+  font-size: 19px;
+}
+
+/* Content */
+.my-review-content {
+  margin-top: 42px;
+}
+
+.my-review-content h2 {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--dark-green);
+  margin-bottom: 14px;
+}
+
+/* Review Card */
+.my-review-card {
+  background: #dfe6dc;
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+
+.my-review-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.my-review-place-name {
+  color: var(--dark-green);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.my-review-place-name:hover {
+  text-decoration: underline;
+}
+
+.my-review-date {
+  color: #111;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.my-review-stars {
+  color: var(--dark-green);
+  font-size: 18px;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+}
+
+.my-review-card p {
+  color: #111;
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+/* Bottom navigation */
+.bottom-nav {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: 16px;
+  height: 56px;
+  border-radius: 999px;
+  background: #E6E8E2;
+  border: 1px solid #aab0a1;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.bottom-nav a {
+  color: var(--dark-green);
+  font-size: 28px;
+  text-decoration: none;
+}
+
+.bottom-nav a.active {
+  color: var(--dark-green);
+}

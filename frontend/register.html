@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TripTailor Register</title>
+  <link rel="stylesheet" href="register.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+</head>
+<body>
+  <div class="page">
+    <div class="phone">
+      <button class="back-btn" type="button">
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+
+      <h1>Create Account</h1>
+
+      <form class="register-form">
+        <input type="text" id="name-input" placeholder="User Name" />
+        <input type="tel" id="phone-input" placeholder="Phone Number" />
+        <input 
+         type="text" 
+         id="birthday-input" 
+         placeholder="Birthday"
+         onfocus="this.type='date'"
+         onblur="if(!this.value)this.type='text'"
+        />
+
+        <div class="select-box">
+          <select id="gender-input">
+            <option selected disabled value="">Gender</option>
+            <option>Female</option>
+            <option>Male</option>
+            <option>Prefer not to say</option>
+          </select>
+          <i class="fa-solid fa-chevron-down select-icon"></i>
+        </div>
+
+        <input type="email" id="email-input" placeholder="Email Address" />
+        <input type="password" id="password-input" placeholder="Password" />
+        <input type="password" id="confirm-password-input" placeholder="Confirm Password" />
+
+        <button class="signup-btn" type="submit">SIGN UP</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = "http://localhost:4000";
+
+    const signupBtn = document.querySelector(".signup-btn");
+    const backBtn = document.querySelector(".back-btn");
+
+    if (backBtn) {
+      backBtn.addEventListener("click", function () {
+        window.location.href = "login.html";
+      });
+    }
+
+    signupBtn.addEventListener("click", async function (e) {
+      e.preventDefault();
+
+      const name = document.getElementById("name-input").value.trim();
+      const phone = document.getElementById("phone-input").value.trim();
+      const birthday = document.getElementById("birthday-input").value;
+      const gender = document.getElementById("gender-input").value;
+      const email = document.getElementById("email-input").value.trim();
+      const password = document.getElementById("password-input").value.trim();
+      const confirmPassword = document.getElementById("confirm-password-input").value.trim();
+
+      if (!name || !email || !phone || !password || !confirmPassword) {
+        alert("Please fill in name, email, phone number, password, and confirm password.");
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        alert("Passwords do not match.");
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/api/register`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: name,
+            email: email,
+            phone_number: phone,
+            password: password,
+            travel_freq: null
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          alert(data.message || "Register failed.");
+          return;
+        }
+
+        localStorage.setItem("user_name", name);
+        localStorage.setItem("user_email", email);
+        localStorage.setItem("user_phone", phone);
+        localStorage.setItem("user_birthday", birthday || "");
+        localStorage.setItem("user_gender", gender || "");
+
+        alert("Register successful. Please log in.");
+        window.location.href = "login.html";
+      } catch (error) {
+        console.error(error);
+        alert("Cannot connect to backend. Please make sure backend is running on port 4000.");
+      }
+    });
+  </script>
+</body>
+</html>

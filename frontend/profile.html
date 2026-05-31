@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TripTailor Profile</title>
+  <link rel="stylesheet" href="profile.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+  <div class="phone">
+    <div class="top-photo">
+      <h1>Profile</h1>
+      <div class="user-photo"><i class="fa-regular fa-user"></i></div>
+      <h2 id="show-name">User</h2>
+    </div>
+
+    <div class="main-content">
+      <div class="stats">
+        <div class="stat-card"id="bookmark-card">
+          <i class="fa-regular fa-star"></i>
+          <div><p>BOOKMARKS</p><h3>0</h3></div>
+        </div>
+        <div class="stat-card"id="review-card">
+          <i class="fa-regular fa-comment"></i>
+          <div><p>REVIEWS</p><h3>0</h3></div>
+        </div>
+      </div>
+
+      <div class="profile-card" id="edit-profile-card">
+        <div class="card-title">
+          <i class="fa-brands fa-pagelines"></i>
+          <span>Set up Profile</span>
+          <i class="fa-solid fa-chevron-right arrow"></i>
+        </div>
+        <div class="info-row"><i class="fa-regular fa-user"></i><span>username</span><p id="show-username">User</p></div>
+        <div class="info-row"><i class="fa-regular fa-envelope"></i><span>email address</span><p id="show-email">user@email.com</p></div>
+        <div class="info-row"><i class="fa-solid fa-phone"></i><span>phone</span><p id="show-phone">Not set</p></div>
+       
+      </div>
+
+      <div class="menu-card" id="preference-card">
+        <i class="fa-regular fa-user"></i>
+        <span>Set up Preference</span>
+        <i class="fa-solid fa-chevron-right arrow"></i>
+      </div>
+
+      <div class="menu-card" id="logout-card">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+        <span>Log out</span>
+        <i class="fa-solid fa-chevron-right arrow"></i>
+      </div>
+
+      <div class="bottom-nav">
+        <a href="home.html"><i class="fa-solid fa-house"></i></a>
+        <a href="search.html"><i class="fa-solid fa-magnifying-glass"></i></a>
+        <a href="favorites.html"><i class="fa-regular fa-star"></i></a>
+        <a href="profile.html" class="active"><i class="fa-regular fa-user"></i></a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = "http://localhost:4000";
+
+    document.addEventListener("DOMContentLoaded", async function () {
+      const userId = localStorage.getItem("user_id");
+
+      if (!userId) {
+        alert("Please log in first.");
+        window.location.href = "login.html";
+        return;
+      }
+
+      await loadProfile(userId);
+      await loadProfileStats(userId);
+
+      document.getElementById("bookmark-card").addEventListener("click", function () {
+        window.location.href = "favorites.html";
+      });
+
+      document.getElementById("review-card").addEventListener("click", function () {
+        window.location.href = "my_review.html";
+      });
+
+      document.getElementById("edit-profile-card").addEventListener("click", function () {
+        window.location.href = "profile_edit.html";
+      });
+
+      document.getElementById("preference-card").addEventListener("click", function () {
+        window.location.href = "preference1.html";
+      });
+
+      document.getElementById("logout-card").addEventListener("click", function () {
+        localStorage.clear();
+        window.location.href = "login.html";
+      });
+    });
+
+    async function loadProfile(userId) {
+      try {
+        const response = await fetch(`${API_BASE}/api/users/${userId}`);
+        const user = await response.json();
+
+        if (!response.ok) {
+          alert(user.message || "Failed to load profile.");
+          return;
+        }
+
+        document.getElementById("show-name").textContent = user.name || "User";
+        document.getElementById("show-username").textContent = user.name || "User";
+        document.getElementById("show-email").textContent = user.email || "user@email.com";
+        document.getElementById("show-phone").textContent = user.phone_number || "Not set";
+        document.getElementById("show-travel-freq").textContent = user.travel_freq || "Not set";
+        document.getElementById("show-city").textContent = localStorage.getItem("user_city") || "Not set";
+        localStorage.setItem("user_name", user.name || "User");
+        localStorage.setItem("user_email", user.email || "");
+        localStorage.setItem("user_phone", user.phone_number || "");
+        localStorage.setItem("user_travel_freq", user.travel_freq || "");
+      } catch (error) {
+        console.error(error);
+        alert("Cannot connect to backend.");
+      }
+    }
+
+    async function loadProfileStats(userId) {
+      try {
+        const [favoritesResponse, reviewsResponse] = await Promise.all([
+          fetch(`${API_BASE}/api/users/${userId}/favorites`),
+          fetch(`${API_BASE}/api/users/${userId}/reviews`)
+        ]);
+
+        const favorites = await favoritesResponse.json();
+        const reviews = await reviewsResponse.json();
+        const statNumbers = document.querySelectorAll(".stat-card h3");
+
+        if (statNumbers[0]) statNumbers[0].textContent = Array.isArray(favorites) ? favorites.length : 0;
+        if (statNumbers[1]) statNumbers[1].textContent = Array.isArray(reviews) ? reviews.length : 0;
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  </script>
+</body>
+</html>

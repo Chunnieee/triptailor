@@ -1,0 +1,230 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, "Noto Sans TC", sans-serif;
+}
+
+body {
+  min-height: 100vh;
+  background: #102016;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.phone {
+  width: 390px;
+  height: 780px;
+  border-radius: 46px;
+  overflow: hidden;
+  position: relative;
+  background: #edf3e9;
+}
+
+/* 上方使用者資訊 */
+.user-bar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+
+  gap: 12px;
+
+  padding: 22px 36px 0;
+}
+
+/* 頭像 */
+.user-photo {
+  width: 45px;
+  height: 45px;
+
+  border-radius: 50%;
+  border: 2px solid #1b1b1b;
+
+  background: rgba(220, 225, 215, 0.85);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.user-photo i {
+  font-size: 26px;
+  color: #111;
+}
+
+.user-bar span {
+  font-size: 18px;
+  color: #222;
+}
+
+/* 返回按鈕 */
+.page-back-btn {
+  position: absolute;
+  top: 28px;
+  left: 28px;
+
+  background: transparent;
+  border: none;
+
+  color: #5d7357;
+  font-size: 22px;
+
+  cursor: pointer;
+  z-index: 10;
+  transition: 0.3s
+}
+
+.page-back-btn:hover {
+  background: rgba(255,255,255,0.75);
+  transform: translateX(-2px);
+}
+
+/* 標題 */
+h1 {
+  margin-top: 10px;
+  margin-bottom: 20px;
+
+  text-align: center;
+
+  font-family: Georgia, serif;
+  font-size: 38px;
+  font-weight: 600;
+
+  color: #183c2f;
+}
+
+/* 表單區 */
+.preference-form {
+  width: 86%;
+  margin: 0 auto;
+}
+
+/* 每個偏好卡片 */
+.preference-card {
+  width: 100%;
+
+  padding: 12px 16px 14px;
+  margin-bottom: 14px;
+
+  border: 1px solid rgba(70, 70, 70, 0.45);
+  border-radius: 8px;
+
+  background: rgba(255,255,255,0.76);
+}
+
+/* 卡片標題 */
+.preference-card h2 {
+  margin-bottom: 12px;
+
+  font-size: 17px;
+  font-weight: 700;
+
+  color: #444;
+}
+
+/* tag 外層 */
+.tag-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 8px;
+}
+
+/* tag button */
+.tag {
+  min-width: 65px;
+  height: 22px;
+
+  padding: 0 10px;
+
+  border-radius: 14px;
+  border: 1px solid rgba(90, 90, 90, 0.45);
+
+  background: transparent;
+
+  font-size: 13px;
+  color: #444;
+
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+/* 選到的 tag */
+.tag.selected {
+  background: #cbd2c6;
+  border-color: #7f9478;
+  color: #102016;
+  font-weight: 600;
+}
+
+/* Save button */
+.save-btn {
+  width: 190px;
+  height: 40px;
+
+  display: block;
+
+  margin: 16px auto 0;
+
+  border: none;
+  border-radius: 24px;
+
+  background: linear-gradient(90deg, #8fa280, #657a5f);
+  color: white;
+
+  font-size: 20px;
+  letter-spacing: 1px;
+
+  cursor: pointer;
+  transition: 0.3s;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.15);
+}
+
+.save-btn:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(90deg, #9dad90, #70886a);
+}
+
+/* 底部 navbar */
+.bottom-nav {
+  position: absolute;
+
+  left: 18px;
+  right: 18px;
+  bottom: 16px;
+
+  height: 56px;
+
+  border-radius: 999px;
+
+  background: #E6E8E2;
+
+  border: 1px solid #aab0a1;
+
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.bottom-nav a {
+  color: var(--dark-green);
+
+  font-size: 28px;
+
+  text-decoration: none;
+}
+
+
+
+/* navbar icon */
+.bottom-nav i {
+  font-size: 25px;
+  color: #3c4538;
+}

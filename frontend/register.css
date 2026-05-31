@@ -1,0 +1,153 @@
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, "Noto Sans TC", sans-serif;
+}
+
+body{
+  min-height: 100vh;
+  background: #172116;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.page{
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 手機框 */
+.phone{
+  width: 390px;
+  height: 780px;
+  border-radius: 46px;
+  overflow: hidden;
+  position: relative;
+  padding: 40px;
+  background-image:
+    linear-gradient(
+    rgba(255,255,255,0.12),
+    rgba(25,45,28,0.38)
+    ),
+    url("registerbg.png");
+
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 18px 40px rgba(0,0,0,0.35);
+}
+
+/* back button */
+.back-btn{
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  color: #172116;
+  cursor: pointer;
+  margin-top: 5px;
+}
+
+.back-btn:hover{
+  transform: translateX(-2px);
+  opacity: 0.7;
+}
+
+/* 標題 */
+h1{
+  text-align: center;
+  margin-top: 10px;
+  margin-bottom: 50px;
+  font-family: Georgia, serif;
+  font-size: 30px;
+  font-weight: 400;
+  color: #40513f;
+}
+
+/* form */
+.register-form{
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+/* input 共用 */
+.register-form input{
+  width: 92%;
+  height: 50px;
+  margin: 0 auto;
+  padding: 0 18px;
+  border-radius: 14px;
+  border: 1px solid rgba(60,60,60,0.45);
+  background: rgba(240, 240, 235, 0.68);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  outline: none;
+  font-size: 16px;
+  color: #3b3b3b;
+}
+
+.register-form input::placeholder{
+  color: #3b3b3b;
+}
+
+/* select 外框 */
+.select-box{
+  position: relative;
+  width: 92%;
+  margin: 0 auto;
+}
+
+/* gender select */
+.register-form select{
+  width: 100%;
+  height: 50px;
+  padding: 0 18px;
+  border-radius: 14px;
+  border: 1px solid rgba(60,60,60,0.45);
+  background: rgba(240, 240, 235, 0.68);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  outline: none;
+  font-size: 16px;
+  color: #3c3c3c;
+  appearance: none;
+}
+
+/* 下拉 icon */
+.select-icon{
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #333;
+  pointer-events: none;
+}
+
+/* signup button */
+.signup-btn {
+  width: 160px;
+  height: 38px;
+  margin: 25px auto 0;
+  border-radius: 22px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(255,255,255,0.50);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  letter-spacing: 1px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #111;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.signup-btn:hover{
+  background:
+   linear-gradient(90deg,rgba(183, 203, 166, 0.95), rgba(88,115,72,0.95));
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.18);
+}

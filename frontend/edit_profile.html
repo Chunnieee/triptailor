@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TripTailor Edit Profile</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+</head>
+<body>
+  <div class="app-page">
+    <div class="app-phone preference-phone">
+      <header class="top-profile">
+        <div></div>
+        <div class="profile-info">
+          <div class="profile-icon"><i class="fa-regular fa-user"></i></div>
+          <span id="edit-user-name">User</span>
+        </div>
+      </header>
+
+      <main class="preference-content">
+        <section class="preference-title-row">
+          <button class="page-back-btn" onclick="history.back()"><i class="fa-solid fa-arrow-left"></i></button>
+          <div>
+            <h3>Edit Profile</h3>
+            <p>Update your personal information.</p>
+          </div>
+        </section>
+
+        <form class="preference-form">
+          <label>Name
+            <input id="edit-name-input" type="text" placeholder="Name" />
+          </label>
+
+          <label>Email Address
+            <input id="edit-email-input" type="email" placeholder="Email" readonly />
+          </label>
+
+          <label>Phone Number
+            <input id="edit-phone-input" type="tel" placeholder="Phone number" />
+          </label>
+
+          <label>Travel Frequency
+            <select id="edit-travel-freq-input">
+              <option value="">Select frequency</option>
+              <option value="Rarely">Rarely</option>
+              <option value="Sometimes">Sometimes</option>
+              <option value="Often">Often</option>
+            </select>
+          </label>
+
+          <button type="button" class="save-preference-btn" id="save-profile-btn">Save Profile</button>
+        </form>
+      </main>
+
+      <nav class="bottom-nav">
+        <a href="home.html"><i class="fa-solid fa-house"></i></a>
+        <a href="search.html"><i class="fa-solid fa-magnifying-glass"></i></a>
+        <a href="favorites.html"><i class="fa-regular fa-star"></i></a>
+        <a href="profile.html"><i class="fa-regular fa-user"></i></a>
+      </nav>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = "http://localhost:4000";
+
+    document.addEventListener("DOMContentLoaded", async function () {
+      const userId = localStorage.getItem("user_id");
+      if (!userId) {
+        alert("Please log in first.");
+        window.location.href = "login.html";
+        return;
+      }
+
+      await loadProfile(userId);
+      document.getElementById("save-profile-btn").addEventListener("click", async function () {
+        await saveProfile(userId);
+      });
+    });
+
+    async function loadProfile(userId) {
+      try {
+        const response = await fetch(`${API_BASE}/api/users/${userId}`);
+        const user = await response.json();
+
+        if (!response.ok) {
+          alert(user.message || "Failed to load profile.");
+          return;
+        }
+
+        document.getElementById("edit-user-name").textContent = user.name || "User";
+        document.getElementById("edit-name-input").value = user.name || "";
+        document.getElementById("edit-email-input").value = user.email || "";
+        document.getElementById("edit-phone-input").value = user.phone_number || "";
+        document.getElementById("edit-travel-freq-input").value = user.travel_freq || "";
+      } catch (error) {
+        console.error(error);
+        alert("Cannot connect to backend.");
+      }
+    }
+
+    async function saveProfile(userId) {
+      const name = document.getElementById("edit-name-input").value.trim();
+      const phoneNumber = document.getElementById("edit-phone-input").value.trim();
+      const travelFreq = document.getElementById("edit-travel-freq-input").value;
+
+      if (!name) {
+        alert("Name cannot be empty.");
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/api/users/${userId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: name,
+            phone_number: phoneNumber,
+            travel_freq: travelFreq
+          })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          alert(data.message || "Failed to update profile.");
+          return;
+        }
+
+        localStorage.setItem("user_name", name);
+        localStorage.setItem("user_phone", phoneNumber);
+        localStorage.setItem("user_travel_freq", travelFreq);
+
+        alert("Profile updated!");
+        window.location.href = "profile.html";
+      } catch (error) {
+        console.error(error);
+        alert("Cannot connect to backend.");
+      }
+    }
+  </script>
+</body>
+</html>

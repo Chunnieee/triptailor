@@ -1,0 +1,61 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --dark-green: #424331;
+  --light-green: #C5CDC2;
+  --background: #F5F5F2;
+  --white: #FFFFFF;
+}
+
+body {
+  background: #1f1f1f;
+  font-family: Arial, "Noto Sans TC", sans-serif;
+}
+
+.app-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 18px 0;
+}
+
+.card-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* =========================
+   UNIVERSAL BACK BUTTON
+========================= */
+
+.back-btn {
+  width: 32px;
+  height: 32px;
+
+  border: none;
+  background: transparent;
+
+  color: var(--dark-green);
+
+  font-size: 22px;
+
+  cursor: pointer;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  transition: 0.2s;
+
+  margin-top: 12px;
+  margin-left: 8px;
+}
+
+.back-btn:hover {
+  opacity: 0.7;
+}

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Post Review</title>
+
+  <link rel="stylesheet" href="common.css" />
+  <link rel="stylesheet" href="post_review.css" />
+
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+  />
+</head>
+
+<body>
+  <div class="app-page">
+    <div class="post-review-phone">
+
+      <header class="post-profile-row">
+        <div></div>
+
+        <div class="profile-info">
+          <div class="profile-icon">
+            <i class="fa-regular fa-user"></i>
+          </div>
+          <span>Sophie Shih</span>
+        </div>
+      </header>
+
+      <section class="post-title-row">
+        <button class="back-btn" onclick="history.back()">
+            <i class="fa-solid fa-angle-left"></i>
+        </button>
+
+        <h2>Reviews</h2>
+      </section>
+
+      <h1 class="post-attraction-name">台北國立故宮博物院</h1>
+
+      <section class="post-stars" id="starRating">
+        <span data-value="1">☆</span>
+        <span data-value="2">☆</span>
+        <span data-value="3">☆</span>
+        <span data-value="4">☆</span>
+        <span data-value="5">☆</span>
+      </section>
+
+      <textarea
+        id="reviewText"
+        class="review-textarea"
+        placeholder="Leave your review"
+      ></textarea>
+
+      <button class="send-btn" id="sendReviewBtn">send</button>
+
+    </div>
+  </div>
+
+  <script src="post_review.js"></script>
+</body>
+</html>

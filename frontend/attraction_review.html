@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TripTailor Reviews</title>
+
+  <link rel="stylesheet" href="common.css" />
+  <link rel="stylesheet" href="attraction_review.css" />
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+</head>
+
+<body>
+
+  <div class="app-page">
+
+    <div class="review-phone">
+      <header class="review-profile-row">
+
+        <div></div>
+        <div class="profile-info">
+          <div class="profile-icon"><i class="fa-regular fa-user"></i></div>
+          <span id="review-user-name">User</span>
+        </div>
+
+      </header>
+
+      <!-- Review Title -->
+      <section class="review-title-row">
+
+        <button class="back-btn" onclick="history.back()">
+          <i class="fa-solid fa-angle-left"></i>
+        </button>
+
+        <h2>Reviews</h2>
+
+      </section>
+
+      <h1 class="review-attraction-name">Attraction</h1>
+
+      <section class="review-summary">
+
+        <div class="review-score">
+          <h3>N/A</h3>
+          <div class="filled-stars">★★★★★</div>
+          <p id="review-count-text">(0)</p>
+        </div>
+        <div class="review-bars">
+
+          <div class="bar">
+            <span class="bar-fill fill-5"></span>
+          </div>
+
+          <div class="bar">
+            <span class="bar-fill fill-4"></span>
+          </div>
+
+          <div class="bar">
+            <span class="bar-fill fill-3"></span>
+          </div>
+
+          <div class="bar">
+            <span class="bar-fill fill-2"></span>
+          </div>
+
+          <div class="bar">
+            <span class="bar-fill fill-1"></span>
+          </div>
+
+        </div>
+
+      </section>
+
+      <section class="write-review-row"></section>
+    </div>
+
+  </div>
+
+  <script>
+    const API_BASE = "http://localhost:4000";
+    let currentAttId = null;
+
+    document.addEventListener("DOMContentLoaded", async function () {
+      const userName = localStorage.getItem("user_name") || "User";
+      document.getElementById("review-user-name").textContent = userName;
+
+      currentAttId = getQueryParam("id");
+      if (!currentAttId) {
+        alert("No attraction id provided.");
+        window.location.href = "home.html";
+        return;
+      }
+
+      await loadAttraction(currentAttId);
+      await loadReviews(currentAttId);
+      addReviewForm(currentAttId);
+    });
+
+    function getQueryParam(name) {
+      const params = new URLSearchParams(window.location.search);
+      return params.get(name);
+    }
+
+    async function loadAttraction(attId) {
+      try {
+        const response = await fetch(`${API_BASE}/api/attractions/${attId}`);
+        const att = await response.json();
+        if (!response.ok) return;
+
+        document.querySelector(".review-attraction-name").textContent = att.att_name;
+        document.querySelector(".review-score h3").textContent = att.avg_rating || att.google_rating || "N/A";
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    async function loadReviews(attId) {
+      try {
+        const response = await fetch(`${API_BASE}/api/attractions/${attId}/reviews`);
+        const reviews = await response.json();
+        const currentUserId = Number(localStorage.getItem("user_id"));
+
+        document.querySelectorAll(".user-review-card").forEach((card) => card.remove());
+        document.getElementById("review-count-text").textContent = `(${Array.isArray(reviews) ? reviews.length : 0})`;
+
+        const phone = document.querySelector(".review-phone");
+
+        if (!Array.isArray(reviews) || reviews.length === 0) {
+          const empty = document.createElement("section");
+          empty.className = "user-review-card";
+          empty.innerHTML = `<p>No reviews yet.</p>`;
+          phone.appendChild(empty);
+          return;
+        }
+
+        reviews.forEach((review) => {
+          const card = document.createElement("section");
+          card.className = "user-review-card";
+          const isMine = Number(review.user_id) === currentUserId;
+
+          card.innerHTML = `
+            <div class="review-user-row">
+              <div class="small-user-icon"><i class="fa-regular fa-user"></i></div>
+              <span>${review.user_name || "User"}</span>
+            </div>
+            <div class="card-stars">${"★".repeat(Number(review.rating))}${"☆".repeat(5 - Number(review.rating))}</div>
+            <p>${review.comment || ""}</p>
+            ${isMine ? `
+              <div class="review-action-row">
+                <button class="edit-btn" data-reviewid="${review.review_id}" data-rating="${review.rating}" data-comment="${(review.comment || "").replace(/"/g, '&quot;')}">Edit</button>
+                <button onclick="deleteReview(${review.review_id})">Delete</button>
+              </div>
+            ` : ""}
+          `;
+
+          phone.appendChild(card);
+        });
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    function addReviewForm(attId) {
+      const writeRow = document.querySelector(".write-review-row");
+      if (!writeRow) return;
+
+      writeRow.innerHTML = `
+        <div class="write-review-form">
+          <select id="review-rating">
+            <option value="5">★★★★★ 5</option>
+            <option value="4">★★★★☆ 4</option>
+            <option value="3">★★★☆☆ 3</option>
+            <option value="2">★★☆☆☆ 2</option>
+            <option value="1">★☆☆☆☆ 1</option>
+          </select>
+          <textarea id="review-comment" placeholder="Write your review..."></textarea>
+          <button onclick="submitReview(${attId})">Send</button>
+        </div>
+      `;
+    }
+
+    async function submitReview(attId) {
+      const userId = localStorage.getItem("user_id");
+      if (!userId) {
+        alert("Please log in first.");
+        window.location.href = "login.html";
+        return;
+      }
+
+      const rating = document.getElementById("review-rating").value;
+      const comment = document.getElementById("review-comment").value.trim();
+      if (!comment) {
+        alert("Please write a review.");
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/api/reviews`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_id: Number(userId),
+            att_id: Number(attId),
+            rating: Number(rating),
+            comment: comment
+          })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          alert(data.message || "Failed to submit review.");
+          return;
+        }
+
+        alert("Review submitted!");
+        document.getElementById("review-comment").value = "";
+        await loadAttraction(attId);
+        await loadReviews(attId);
+      } catch (error) {
+        console.error(error);
+        alert("Cannot connect to backend.");
+      }
+    }
+
+    function editReview() { } // 保留空函式避免 onclick 殘留報錯
+
+    document.addEventListener("click", function (e) {
+      if (e.target.classList.contains("edit-btn")) {
+        const btn = e.target;
+        const reviewId = btn.dataset.reviewid;
+        const oldRating = btn.dataset.rating;
+        const oldComment = btn.dataset.comment;
+        const targetCard = btn.closest(".user-review-card");
+        if (!targetCard) return;
+        if (targetCard.querySelector(".edit-form")) return;
+
+        // 隱藏 Edit / Delete 按鈕
+        targetCard.querySelector(".review-action-row").style.display = "none";
+
+        const editForm = document.createElement("div");
+        editForm.className = "edit-form";
+        editForm.innerHTML = `
+        <select id="edit-rating-${reviewId}">
+          <option value="5" ${oldRating == 5 ? "selected" : ""}>★★★★★ 5</option>
+          <option value="4" ${oldRating == 4 ? "selected" : ""}>★★★★☆ 4</option>
+          <option value="3" ${oldRating == 3 ? "selected" : ""}>★★★☆☆ 3</option>
+          <option value="2" ${oldRating == 2 ? "selected" : ""}>★★☆☆☆ 2</option>
+          <option value="1" ${oldRating == 1 ? "selected" : ""}>★☆☆☆☆ 1</option>
+        </select>
+        <textarea id="edit-comment-${reviewId}">${oldComment}</textarea>
+        <div style="display:flex;gap:8px;margin-top:6px;">
+          <button class="save-btn" data-reviewid="${reviewId}">Save</button>
+          <button class="cancel-btn" data-reviewid="${reviewId}">Cancel</button>
+        </div>
+      `;
+        targetCard.appendChild(editForm);
+      }
+
+      if (e.target.classList.contains("cancel-btn")) {
+        const card = e.target.closest(".user-review-card");
+        if (!card) return;
+        card.querySelector(".edit-form")?.remove();
+        // 恢復 Edit / Delete 按鈕
+        const actionRow = card.querySelector(".review-action-row");
+        if (actionRow) actionRow.style.display = "";
+      }
+
+      if (e.target.classList.contains("save-btn")) {
+        const reviewId = e.target.dataset.reviewid;
+        submitEdit(reviewId);
+      }
+    });
+
+    async function submitEdit(reviewId) {
+      const ratingEl = document.getElementById(`edit-rating-${reviewId}`);
+      const commentEl = document.getElementById(`edit-comment-${reviewId}`);
+      if (!ratingEl || !commentEl) return;
+
+      const ratingNumber = Number(ratingEl.value);
+      const newComment = commentEl.value.trim();
+      if (!newComment) {
+        alert("Comment cannot be empty.");
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/api/reviews/${reviewId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ rating: ratingNumber, comment: newComment })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          alert(data.message || "Failed to update review.");
+          return;
+        }
+
+        await loadAttraction(currentAttId);
+        await loadReviews(currentAttId);
+      } catch (error) {
+        console.error(error);
+        alert("Cannot connect to backend.");
+      }
+    }
+
+    async function deleteReview(reviewId) {
+      if (!confirm("Delete this review?")) return;
+
+      try {
+        const response = await fetch(`${API_BASE}/api/reviews/${reviewId}`, {
+          method: "DELETE"
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          alert(data.message || "Failed to delete review.");
+          return;
+        }
+
+        alert("Review deleted!");
+        await loadAttraction(currentAttId);
+        await loadReviews(currentAttId);
+      } catch (error) {
+        console.error(error);
+        alert("Cannot connect to backend.");
+      }
+    }
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,183 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* 頁面背景與字體 */
+body {
+  background: #424331;
+  font-family: Arial, "Noto Sans TC", sans-serif;
+}
+
+.page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background:
+    radial-gradient(circle, rgba(255,255,255,0.08), transparent 40%),
+    linear-gradient(180deg, #1d271e, #111812);
+}
+
+.phone {
+  width: 390px;
+  height: 780px;
+  border-radius: 46px;
+  overflow: hidden;
+  position: relative;
+
+  background-image:
+   linear-gradient(
+    rgba(255,255,255,0.12),
+    rgba(25,45,28,0.38)
+   ),
+   url("loginbg.png");
+
+  background-size: cover;
+  background-position: center;
+}
+
+/* main content */
+.content {
+  height: 100%;
+  padding: 125px 34px 45px;
+  text-align: center;
+  color: #40513f;
+}
+
+/* Logo */
+.logo-icon {
+  font-size: 48px;
+  margin-bottom: 10px;
+  color: #40513f;
+}
+
+/* App 名稱 */
+h1 {
+  font-family: Georgia, serif;
+  font-size: 56px;
+  font-weight: 500;
+  color: #40513f;
+}
+
+/* 副標題 */
+.subtitle {
+  font-size: 18px;
+  margin-top: 8px;
+  margin-bottom: 82px;
+  color: #445444;
+}
+
+/* 輸入區 */
+.input-group {
+  position: relative;
+  margin-bottom: 35px;
+}
+
+/* 標籤 */
+.label {
+  position: absolute;
+  top: -12px;
+  left: 20px;
+  background: #536846;
+  color: white;
+  padding: 4px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  z-index: 2;
+}
+
+/* input 外框 */
+.input-box {
+  height: 54px;
+  border-radius: 18px;
+  border: 2px solid rgba(67, 78, 61, 0.65);
+  background: rgba(245, 245, 235, 0.72);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 20px;
+  backdrop-filter: blur(6px);
+}
+
+/* input 本身 */
+.input-box input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 18px;
+  color: #555;
+}
+
+/* placeholder 文字 */
+.input-box input::placeholder {
+  color: #8f8f8f;
+}
+
+/* 密碼鎖 icon */
+.fa-lock {
+  color: #6d735f;
+  font-size: 18px;
+  opacity: 0.8;
+}
+
+/* 眼睛 icon */
+#toggle-password {
+  color: #6d735f;
+  cursor: pointer;
+}
+
+/* Login button */
+.login-btn {
+  width: 60%;
+  height: 50px;
+  border: none;
+  border-radius: 22px;
+  margin-top: 20px;
+
+  background: linear-gradient(90deg, #465d39, #314b2f);
+  color: rgba(235, 250, 223, 0.95);
+  
+  font-size: 20px;
+  letter-spacing: 1px;
+  
+  box-shadow: 0 12px 25px rgba(0,0,0,0.25);
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.login-btn:hover{
+  background: linear-gradient(90deg, #56724a, #3d5c3b);
+  transform: translateY(-2px);
+  transition: 0.3s;
+}
+
+/* 註冊提示文字 */
+.signup {
+  margin-top: 32px;
+  color: white;
+  font-size: 18px;
+}
+
+/* sign up 連結 */
+.signup a {
+  color: #d5ead0;
+  margin-left: 10px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  transition: 0.3s;
+}
+
+.fa-lock {
+  color: #6d735f;
+  font-size: 22px;
+  opacity: 0.8;
+}
+
+.signup a:hover {
+  color: rgba(157, 179, 130, 0.918);
+}

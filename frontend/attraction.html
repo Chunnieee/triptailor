@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>TripTailor Attraction Detail</title>
+
+  <link rel="stylesheet" href="common.css" />
+  <link rel="stylesheet" href="attraction.css" />
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+</head>
+
+<body>
+  <div class="app-page">
+    <div class="attraction-phone">
+
+      <section class="attraction-hero">
+        <button class="back-btn" onclick="history.back()">
+          <i class="fa-solid fa-angle-left"></i>
+        </button>
+
+        <img src="images/palace.jpg" alt="Attraction Image" />
+      </section>
+
+      <main class="attraction-content">
+
+        <div class="tag-row">
+          <span>Attraction</span>
+          <span>Taiwan</span>
+        </div>
+
+        <h1>Loading...</h1>
+
+        <section class="stats-row">
+          <div class="stat-box">
+            <strong>-</strong>
+            <small>rating</small>
+          </div>
+
+          <div class="stat-box">
+            <strong>0</strong>
+            <small>likes</small>
+          </div>
+
+          <div class="stat-box">
+            <strong>-</strong>
+            <small>ticket</small>
+          </div>
+
+          <div class="stat-box">
+            <strong>0</strong>
+            <small>bookmarks</small>
+          </div>
+        </section>
+
+        <p class="attraction-description">
+          Loading attraction description...
+        </p>
+
+        <section class="transport-section">
+          <h3>Transportation</h3>
+
+          <div class="transport-card">
+            <p>Loading transportation info...</p>
+          </div>
+        </section>
+
+        <div class="attraction-actions">
+          <a href="#" class="action-btn">Bookmarks</a>
+          <a href="#" class="action-btn">Reviews</a>
+        </div>
+
+      </main>
+
+      <nav class="bottom-nav">
+        <a href="home.html">
+          <i class="fa-solid fa-house"></i>
+        </a>
+
+        <a href="search.html">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </a>
+
+        <a href="favorites.html">
+          <i class="fa-regular fa-star"></i>
+        </a>
+
+        <a href="profile.html">
+          <i class="fa-regular fa-user"></i>
+        </a>
+      </nav>
+
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = "http://localhost:4000";
+
+    document.addEventListener("DOMContentLoaded", async function () {
+      const attId = getQueryParam("id") || 1;
+      await loadAttractionDetail(attId);
+    });
+
+    function getQueryParam(name) {
+      const params = new URLSearchParams(window.location.search);
+      return params.get(name);
+    }
+
+    async function loadAttractionDetail(attId) {
+      try {
+        const response = await fetch(`${API_BASE}/api/attractions/${attId}`);
+        const att = await response.json();
+
+        if (!response.ok) {
+          alert(att.message || "Failed to load attraction.");
+          window.location.href = "home.html";
+          return;
+        }
+
+        const title = document.querySelector(".attraction-content h1");
+        const description = document.querySelector(".attraction-description");
+        const tagRow = document.querySelector(".tag-row");
+        const statBoxes = document.querySelectorAll(".stat-box strong");
+        const detailImage = document.querySelector(".attraction-hero img");
+        const actions = document.querySelector(".attraction-actions");
+
+        if (title) title.textContent = att.att_name;
+
+        if (description) {
+          description.textContent =
+            att.description ||
+            att.formatted_address ||
+            "No description available.";
+        }
+
+        if (tagRow) {
+          tagRow.innerHTML = `
+            <span>${att.categories || "Attraction"}</span>
+            <span>${att.city || "Taiwan"}</span>
+          `;
+        }
+
+        if (statBoxes.length >= 4) {
+          statBoxes[0].textContent = att.avg_rating || att.google_rating || "N/A";
+          statBoxes[1].textContent = "0";
+          statBoxes[2].textContent = att.ticket_price || "0";
+          statBoxes[3].textContent = att.bookmark_count ?? 0;
+        }
+
+        if (detailImage) {
+          detailImage.src = "images/palace.jpg";
+          detailImage.alt = att.att_name;
+        }
+
+        if (actions) {
+          actions.innerHTML = `
+            <a href="#" class="action-btn" onclick="addFavorite(${att.att_id})">Bookmarks</a>
+            <a href="attraction_review.html?id=${att.att_id}" class="action-btn">Reviews</a>
+          `;
+        }
+
+        await loadTransportation(attId);
+
+      } catch (error) {
+        console.error(error);
+        alert("Cannot connect to backend.");
+      }
+    }
+
+    async function loadTransportation(attId) {
+      const transportCard = document.querySelector(".transport-card");
+
+      if (!transportCard) return;
+
+      try {
+        const response = await fetch(
+          `${API_BASE}/api/attractions/${attId}/transportation`
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || !data || data.length === 0) {
+          transportCard.innerHTML = `
+            <p>No transportation information available.</p>
+          `;
+          return;
+        }
+
+        transportCard.innerHTML = data.map((item) => {
+          const type = item.trans_type || "Transportation";
+          const station = item.station_name || "Unknown station";
+          const walkingTime = item.walking_time
+            ? `${item.walking_time} mins`
+            : "N/A";
+          const parking = item.parking || "N/A";
+
+          return `
+            <div class="transport-item">
+              <p>
+                <i class="fa-solid fa-route"></i>
+                ${type}: ${station}
+              </p>
+
+              <p>
+                <i class="fa-solid fa-person-walking"></i>
+                Walking time: ${walkingTime}
+              </p>
+
+              <p>
+                <i class="fa-solid fa-square-parking"></i>
+                Parking: ${parking}
+              </p>
+            </div>
+          `;
+        }).join("");
+
+      } catch (error) {
+        console.error(error);
+
+        transportCard.innerHTML = `
+          <p>Cannot load transportation information.</p>
+        `;
+      }
+    }
+
+    async function addFavorite(attId) {
+      const userId = localStorage.getItem("user_id");
+
+      if (!userId) {
+        alert("Please log in first.");
+        window.location.href = "login.html";
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/api/favorites`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            user_id: Number(userId),
+            att_id: Number(attId),
+            favorite_name: "My Favorite"
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          alert(data.message || "Failed to add favorite.");
+          return;
+        }
+
+        alert("Added to bookmarks!");
+        const bookmarkStat = document.querySelectorAll(".stat-box strong")[3];
+        if (bookmarkStat) {
+          bookmarkStat.textContent = Number(bookmarkStat.textContent) + 1;
+        }
+      } catch (error) {
+        console.error(error);
+        alert("Cannot connect to backend.");
+      }
+    }
+  </script>
+</body>
+
+</html>
